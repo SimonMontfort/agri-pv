@@ -50,16 +50,44 @@ vote <- read.csv("data/data.csv")
 vote$QID1214859317_cjp1
 vote$Q15.15
 
-vote %>% 
-  select("QID1214859317_cjp1",	"QID1214859317_cjp2",	"QID246_cjp1",	"QID246_cjp2", "QID251_cjp1",	"QID251_cjp2", "QID255_cjp1", "QID255_cjp2",
-         "Q15.8", "Q15.14", "Q15.20", "Q15.26", "Q15.27") %>% 
-  summary()
+#############notes###################
+# first, only use those in the control group of the NIMBY experiment
+# vote %>% 
+#   filter(NIMBY) 
+
+# environment_score --> interactions
+# 1) environmentally friendly behaviour 
+# 2) env crisis
+# 3) catastrophe
+
+# circle_match --> 1 = right treatement
+# circle1 --> 1 = high, 0 = low
+# circle2 --> 1 = high, 0 = low
+# circle3 --> 1 = high, 0 = low
+
+# circle --> if any is 1, then 1 otherwise 0
+
+############# notes ###################
+
+# vote %>% 
+#   select(vars("QID1214859317_cjp1",	"QID1214859317_cjp2",	"QID246_cjp1",	"QID246_cjp2", 
+#               "QID251_cjp1",	"QID251_cjp2", "QID255_cjp1", "QID255_cjp2", 
+#               "Q15.9_1", "Q15.9_2", "Q15.15_1", "Q15.15_2", "Q15.21_1",	"Q15.21_2", 
+#               "Q15.27_1", "Q15.27_2", "Q15.8", "Q15.14", "Q15.20", "Q15.26")) %>% 
+#   summary()
 # subset to full completes
 # vote <- vote[vote$Status == "IP Address",]
 # vote <- vote[vote$QID6 == "Ja",] # only respondents who are eligible to vote
 # subset missing values for conjoint (using the conjoint attribute values shown to the respondent)
-vote <- vote[rowSums(is.na(vote[,c("QID1214859317_cjp1",	"QID1214859317_cjp2",	"QID246_cjp1",	"QID246_cjp2", "QID251_cjp1",	"QID251_cjp2", "QID255_cjp1", "QID255_cjp2",
-                                   "Q15.8", "Q15.9", "Q15.14", "Q15.15", "Q15.20",	"Q15.21", "Q15.26", "Q15.27")])) == 0,]
+# vote <- vote[rowSums(is.na(vote[,c("QID1214859317_cjp1",	"QID1214859317_cjp2",	"QID246_cjp1",	"QID246_cjp2", "QID251_cjp1",	"QID251_cjp2", "QID255_cjp1", "QID255_cjp2",
+                                   # "Q15.8", "Q15.9", "Q15.14", "Q15.15", "Q15.20",	"Q15.21", "Q15.26", "Q15.27")])) == 0,]
+
+# filter all with NA
+vote <- vote %>% 
+  filter_at(vars(QID1214859317_cjp1,	QID1214859317_cjp2,	QID246_cjp1, QID246_cjp2, 
+                QID251_cjp1, QID251_cjp2, QID255_cjp1, QID255_cjp2, 
+                Q15.9_1, Q15.9_2, Q15.15_1, Q15.15_2, Q15.21_1,	Q15.21_2, 
+                Q15.27_1, Q15.27_2, Q15.8, Q15.14, Q15.20, Q15.26), ~ !is.na(.))
 
 # assign id
 vote$id <- 1:nrow(vote)
@@ -69,16 +97,16 @@ vote <- as.data.frame(vote)
 # vote$StartDate <- as_datetime(as.numeric(vote$StartDate)* 3600*24, origin='1900-01-01')
 # # subset to all those respondents after the pretest, this does nothing because 
 # vote <- vote[vote$StartDate > as.Date("2021-06-05", "%Y-%m-%d"),]
-table(vote$QID14, useNA = "always")
-table(vote$QID82_1, useNA = "always")
-table(vote$QID618_1, useNA = "always")
-table(vote$QID565, useNA = "always")
-table(vote$QID16, useNA = "always")
-table(vote$QID19, useNA = "always")
-table(vote$QID22, useNA = "always") # plz question
-sum(is.na(vote$QID22))
-table(is.na(vote$no_of_stations_ev))
-nrow(vote)
+# table(vote$QID14, useNA = "always")
+# table(vote$QID82_1, useNA = "always")
+# table(vote$QID618_1, useNA = "always")
+# table(vote$QID565, useNA = "always")
+# table(vote$QID16, useNA = "always")
+# table(vote$QID19, useNA = "always")
+# table(vote$QID22, useNA = "always") # plz question
+# sum(is.na(vote$QID22))
+# table(is.na(vote$no_of_stations_ev))
+# nrow(vote)
 
 ## info on survey used in the text:
 # start date
@@ -102,7 +130,7 @@ summary(as.numeric(vote$`Duration (in seconds)`))[3]/60
 # functions and custom theme
 ######################################################
 # function to transform the data from qualtrics to the formate required by the cjoint package
-split_cjp <- function(vote, vals, support, activism, choice){
+split_cjp <- function(vote, vals, support, choice){
   # initialise list
   shown_conj_values <- list()
   # loop through all values
@@ -112,15 +140,15 @@ split_cjp <- function(vote, vals, support, activism, choice){
     # bind the list together 
     shown_conj_values[[vals[i]]] <- do.call(rbind, shown_conj_values[[vals[i]]])
     # replace col labels
-    colnames(shown_conj_values[[vals[i]]]) <- c("attrib1_lab", "attrib2_lab", "attrib3_lab", "attrib4_lab", "attrib5_lab", "attrib6_lab")
+    colnames(shown_conj_values[[vals[i]]]) <- c("attrib1_lab", "attrib2_lab", "attrib3_lab", "attrib4_lab", "attrib5_lab", "attrib6_lab", "attrib7_lab")
     # bind the support variable to it
     shown_conj_values[[vals[i]]] <- cbind(shown_conj_values[[vals[i]]], vote[, as.character(support[i])])
     # rename cols
     colnames(shown_conj_values[[vals[i]]])[length(colnames(shown_conj_values[[vals[i]]]))] <- "rate"
     # bind the activism variable to it
-    shown_conj_values[[vals[i]]] <- cbind(shown_conj_values[[vals[i]]], vote[, as.character(activism[i])])
+    # shown_conj_values[[vals[i]]] <- cbind(shown_conj_values[[vals[i]]], vote[, as.character(activism[i])])
     # rename cols
-    colnames(shown_conj_values[[vals[i]]])[length(colnames(shown_conj_values[[vals[i]]]))] <- "rate_activism"
+    # colnames(shown_conj_values[[vals[i]]])[length(colnames(shown_conj_values[[vals[i]]]))] <- "rate_activism"
     # choice outcome only appears 4 times, rate outcomes appear 8 times, therefore change the counter
     j <- if(i %in% 1:2) 1 else if (i %in% 3:4) 2 else if (i %in% 5:6) 3 else if (i %in% 7:8) 4
     # bind the choice variable to it
@@ -159,14 +187,14 @@ split_cjp <- function(vote, vals, support, activism, choice){
   df_cjp
 }
 
-qid_values <- c("QID430_cjp1",	"QID430_cjp2",	"QID431_cjp1",	"QID431_cjp2", "QID392_cjp1",	"QID392_cjp2", "QID393_cjp1", "QID393_cjp2") # Werte
-support <- c("QID98_1", "QID98_2", "QID270_1", "QID270_2", "QID282_1",	"QID282_2", "QID281_1", "QID281_2") # Werte
-activism <- c("QID389_1", "QID389_2", "QID415_1", "QID415_2", "QID412_1",	"QID412_2", "QID414_1", "QID414_2") # Werte
-choice <- c("QID96", "QID269", "QID277", "QID279") # Werte
+qid_values <- c("QID1214859317_cjp1",	"QID1214859317_cjp2",	"QID246_cjp1",	"QID246_cjp2", "QID251_cjp1",	"QID251_cjp2", "QID255_cjp1", "QID255_cjp2") # Werte
+support <- c("Q15.9_1", "Q15.9_2", "Q15.15_1", "Q15.15_2", "Q15.21_1",	"Q15.21_2", "Q15.27_1", "Q15.27_2") # Werte
+# activism <- c("QID389_1", "QID389_2", "QID415_1", "QID415_2", "QID412_1",	"QID412_2", "QID414_1", "QID414_2") # Werte
+choice <- c("Q15.8", "Q15.14", "Q15.20", "Q15.26") # Werte
 vals <- qid_values
 
 # transform the data
-# dat <- split_cjp(vote, qid_values, support, activism, choice)
+dat <- split_cjp(vote, qid_values, support, choice)
 # dat %>% group_by(id, round) %>% summarise(choice = sum(choice)) %>% ungroup() %>% distinct(choice) # should be one
 # ## to double check that function works correctly -- values are the same. All good
 # # for DV rate
@@ -280,119 +308,120 @@ theme_SM <- function () {
 
 ## (1) use user-defined function to transform data to long
 # variables which will be supplied ot the function below for transformation
-qid_values <- c("QID430_cjp1",	"QID430_cjp2",	"QID431_cjp1",	"QID431_cjp2", "QID392_cjp1",	"QID392_cjp2", "QID393_cjp1", "QID393_cjp2") # Werte
-support <- c("QID98_1", "QID98_2", "QID270_1", "QID270_2", "QID282_1",	"QID282_2", "QID281_1", "QID281_2") # Werte
-activism <- c("QID389_1", "QID389_2", "QID415_1", "QID415_2", "QID412_1",	"QID412_2", "QID414_1", "QID414_2") # Werte
-choice <- c("QID96", "QID269", "QID277", "QID279") # Werte
-vals <- qid_values
+# qid_values <- c("QID430_cjp1",	"QID430_cjp2",	"QID431_cjp1",	"QID431_cjp2", "QID392_cjp1",	"QID392_cjp2", "QID393_cjp1", "QID393_cjp2") # Werte
+# support <- c("QID98_1", "QID98_2", "QID270_1", "QID270_2", "QID282_1",	"QID282_2", "QID281_1", "QID281_2") # Werte
+# activism <- c("QID389_1", "QID389_2", "QID415_1", "QID415_2", "QID412_1",	"QID412_2", "QID414_1", "QID414_2") # Werte
+# choice <- c("QID96", "QID269", "QID277", "QID279") # Werte
+# vals <- qid_values
 
 # transform the data
-dat <- split_cjp(vote, qid_values, support, activism, choice)
+dat <- split_cjp(vote, qid_values, support, choice)
 
 ## (2) recode variable format and content (languages)
 # to character
-dat[,  c("attrib1_lab", "attrib2_lab", "attrib3_lab", "attrib4_lab", "attrib5_lab", "attrib6_lab")] <- sapply(dat[,  c("attrib1_lab", "attrib2_lab", "attrib3_lab", "attrib4_lab", "attrib5_lab", "attrib6_lab")], as.character)
+dat[,  c("attrib1_lab", "attrib2_lab", "attrib3_lab", "attrib4_lab", "attrib5_lab", "attrib6_lab", "attrib7_lab")] <- sapply(dat[,  c("attrib1_lab", "attrib2_lab", "attrib3_lab", "attrib4_lab", "attrib5_lab", "attrib6_lab", "attrib7_lab")], as.character)
 
 # recode labels of the conjoint (French / German) for uniform labelling
-dat$attrib2_lab[grepl("(0 Fr./t CO2)", dat$attrib2_lab, fixed = T)] <- "No tax on petrol (0 Fr./t CO2)"
-dat$attrib2_lab[grepl("(60 Fr./t CO2)", dat$attrib2_lab, fixed = T)] <- "0.14 Fr./l petrol (60 Fr./t CO2)"
-dat$attrib2_lab[grepl("(120 Fr./t CO2)", dat$attrib2_lab, fixed = T)] <- "0.28 Fr./l petrol (120 Fr./t CO2)"
-dat$attrib2_lab[grepl("(180 Fr./t CO2)", dat$attrib2_lab, fixed = T)] <- "0.42 Fr./l petrol (180 Fr./t CO2)"
-dat$attrib2_lab[grepl("(240 Fr./t CO2)", dat$attrib2_lab, fixed = T)] <- "0.56 Fr./l petrol (240 Fr./t CO2)"
+dat$attrib1_lab[dat$attrib1_lab %in% c("Agri-PV-Anlage auf Gewächshäusern und Ersatz von Folientunneln", "Installations agri-PV sur des serres et remplacement de tunnels en plastique")] <- "Agri-PV systems on greenhouses and replacement of polytunnels"
+dat$attrib1_lab[dat$attrib1_lab %in% c("Horizontale Freiflächen Agri-PV-Anlage auf Weide- oder Ackerland", "Surfaces libres horizontales pour installations agri-PV sur des pâturage ou des terres cultivées")] <-  "Horizontal open space Agri-PV systems on pasture or arable land"
+dat$attrib1_lab[dat$attrib1_lab %in% c("Vertikale Freiflächen Agri-PV-Anlage auf Weide- oder Ackerland", "Surfaces libres verticales pour installations agri-PV sur des pâturages ou des terres cultivées ")] <-  "Vertical open space Agri-PV systems on pasture or arable land"
 
-dat$attrib3_lab[grepl("(0 Fr./t CO2)", dat$attrib3_lab, fixed = T)] <- "No tax on heating oil (0 Fr./t CO2)" 
-dat$attrib3_lab[grepl("(60 Fr./t CO2)", dat$attrib3_lab, fixed = T)] <- "0.16 Fr./l heating oil (60 Fr./t CO2)"
-dat$attrib3_lab[grepl("(120 Fr./t CO2)", dat$attrib3_lab, fixed = T)] <- "0.31 Fr./l heating oil (120 Fr./t CO2)"
-dat$attrib3_lab[grepl("(180 Fr./t CO2)", dat$attrib3_lab, fixed = T)] <- "0.47 Fr./l heating oil (180 Fr./t CO2)"
-dat$attrib3_lab[grepl("(240 Fr./t CO2)", dat$attrib3_lab, fixed = T)] <- "0.63 Fr./l heating oil (240 Fr./t CO2)"
+dat$attrib2_lab[grepl("1ha)", dat$attrib2_lab, fixed = T)] <- "Up to one football pitch (approx. 1ha)"
+dat$attrib2_lab[grepl("5ha)", dat$attrib2_lab, fixed = T)] <- "Up to 5 football pitches (approx. 5ha)"
+dat$attrib2_lab[grepl("10ha)", dat$attrib2_lab, fixed = T)] <- "Up to 10 football pitches (approx. 10ha)"
 
-dat$attrib4_lab[grepl("(0 Fr./t CO2)", dat$attrib4_lab, fixed = T)] <- "No tax on meat (0 Fr./t CO2)" 
-dat$attrib4_lab[grepl("(60 Fr./t CO2)", dat$attrib4_lab, fixed = T)] <- "0.77 Fr./kg meat (60 Fr./t CO2)"
-dat$attrib4_lab[grepl("(120 Fr./t CO2)", dat$attrib4_lab, fixed = T)] <- "1.53 Fr./kg meat (120 Fr./t CO2)"
-dat$attrib4_lab[grepl("(180 Fr./t CO2)", dat$attrib4_lab, fixed = T)] <- "2.30 Fr./kg meat (180 Fr./t CO2)"
-dat$attrib4_lab[grepl("(240 Fr./t CO2)", dat$attrib4_lab, fixed = T)] <- "3.07 Fr./kg meat (240 Fr./t CO2)"
+dat$attrib3_lab[grepl("0-500", dat$attrib3_lab, fixed = T)] <- "0-500 meters" 
+dat$attrib3_lab[grepl("500-1500", dat$attrib3_lab, fixed = T)] <- "500-1500 meters"
+dat$attrib3_lab[grepl("1500-4500", dat$attrib3_lab, fixed = T)] <- "1500-4500 meters"
 
-dat$attrib5_lab[dat$attrib5_lab %in% c("Pas de taxe", "Keine Abgabe")] <- "No tax on private flights"
-dat$attrib5_lab[dat$attrib5_lab %in% c("10 Fr. pour les vols court-courrier et <br>30 Fr. pour les vols long-courrier", "10 Fr. für Kurz- und <br>30 Fr. für Langstrecken")] <-  "10 Fr. for short- and 30 Fr. for long-distance"
-dat$attrib5_lab[dat$attrib5_lab %in% c("25 Fr. pour les vols court-courrier et <br>75 Fr. pour les vols long-courrier", "25 Fr. für Kurz- und <br>75 Fr. für Langstrecken")] <-  "25 Fr. for short- and 75 Fr. for long-distance"
-dat$attrib5_lab[dat$attrib5_lab %in% c("40 Fr. pour les vols court-courrier et <br>120 Fr. pour les vols long-courrier", "40 Fr. für Kurz- und <br>120 Fr. für Langstrecken")] <- "40 Fr. for short- and 120 Fr. for long-distance"
-dat$attrib5_lab[dat$attrib5_lab %in% c("55 Fr. pour les vols court-courrier et <br>165 Fr. pour les vols long-courrier", "55 Fr. für Kurz- und <br>165 Fr. für Langstrecken")] <- "55 Fr. for short- and 165 Fr. for long-distance"
+dat$attrib4_lab[dat$attrib4_lab %in% c("Gemeinde", "Commune")] <- "Municipality"
+dat$attrib4_lab[dat$attrib4_lab %in% c("Regionaler Energieversorger", "Fournisseur régional d'énergie")] <-  "Regional energy supplier"
+dat$attrib4_lab[dat$attrib4_lab %in% c("Bäuerinnen und Bauern", "Paysans et paysannes")] <-  "Farmers"
+dat$attrib4_lab[dat$attrib4_lab %in% c("Grundstückseigentümer", "Propriétaire du terrain")] <- "Landowner"
+dat$attrib4_lab[dat$attrib4_lab %in% c("Energiegenossenschaft (z.B. lokale Bevölkerung)", "Coopérative énergétique (par ex. citoyens locaux)")] <- "Energy cooperative (e.g. local population)"
+dat$attrib4_lab[dat$attrib4_lab %in% c("Externe (nicht lokale) Investoren", "Investisseurs externes (non locaux)")] <- "External (non-local) investors"
 
-dat$attrib6_lab[dat$attrib6_lab %in% c("Ausschliesslich pauschale Rückerstattung", "Uniquement des remboursements forfaitaires")] <- "Exclusively lump sum reimbursement"
-dat$attrib6_lab[dat$attrib6_lab %in% c("Mehrheitlich pauschale Rückerstattung", "Majoritairement des remboursements forfaitaires")] <- "Mostly lump sum reimbursement"  
-dat$attrib6_lab[dat$attrib6_lab %in% c("Pauschale Rückerstattung und Klimaschutzförderbeiträge", "Des remboursements forfaitaires et des investissements dans la protection du climat")] <- "Lump sum reimbursement und investment into climate protection"
-dat$attrib6_lab[dat$attrib6_lab %in% c("Mehrheitlich für Klimaschutzförderbeiträge", "Majoritairement des investissements dans la protection du climat")] <- "Mostly investment into climate protection"
-dat$attrib6_lab[dat$attrib6_lab %in% c("Ausschliesslich für Klimaschutzförderbeiträge", "Exclusivement des investissements dans la protection du climat")] <- "Exclusively investment into climate protection"
+dat$attrib5_lab[grepl("0-5%", dat$attrib5_lab, fixed = T)] <- "0-5% reduction in crop yield"
+dat$attrib5_lab[grepl("6-10%", dat$attrib5_lab, fixed = T)] <- "6-10% reduction in crop yield"  
+dat$attrib5_lab[grepl("11-20%", dat$attrib5_lab, fixed = T)] <- "11-20% reduction in crop yield"
+dat$attrib5_lab[grepl("21-40%", dat$attrib5_lab, fixed = T)] <- "21-40% reduction in crop yield"
+dat$attrib5_lab[grepl("41-80%", dat$attrib5_lab, fixed = T)] <- "41-80% reduction in crop yield"
+
+dat$attrib6_lab[grepl("0-5%", dat$attrib6_lab, fixed = T)] <- "0-5% increase in own production"
+dat$attrib6_lab[grepl("6-10%", dat$attrib6_lab, fixed = T)] <- "6-10% increase in own production "  
+dat$attrib6_lab[grepl("11-20%", dat$attrib6_lab, fixed = T)] <- "11-20% increase in own production"
+dat$attrib6_lab[grepl("21-40%", dat$attrib6_lab, fixed = T)] <- "21-40% increase in own production"
+dat$attrib6_lab[grepl("41-80%", dat$attrib6_lab, fixed = T)] <- "41-80% increase in own production"
+
+dat$attrib7_lab[grepl("0-5%", dat$attrib7_lab, fixed = T)] <- "0-5% higher income"
+dat$attrib7_lab[grepl("6-10%", dat$attrib7_lab, fixed = T)] <- "6-10% higher income"  
+dat$attrib7_lab[grepl("11-20%", dat$attrib7_lab, fixed = T)] <- "11-20% higher income" 
+dat$attrib7_lab[grepl("21-40%", dat$attrib7_lab, fixed = T)] <- "21-40% higher income"
+dat$attrib7_lab[grepl("41-80%", dat$attrib7_lab, fixed = T)] <- "41-80% higher income"
 
 # check that none are NA, should be FALSE
-any(sapply(dat[, c( "attrib2_lab", "attrib3_lab", "attrib4_lab", "attrib5_lab", "attrib6_lab")], is.na))
+any(sapply(dat[, c("attrib2_lab", "attrib3_lab", "attrib4_lab", "attrib5_lab", "attrib6_lab")], is.na))
 
 # # delete html column breaks inserted for layout in qualtrics
 # dat[, c( "attrib2_lab", "attrib3_lab", "attrib4_lab", "attrib5_lab", "attrib6_lab")] <- lapply(dat[, c( "attrib2_lab", "attrib3_lab", "attrib4_lab", "attrib5_lab", "attrib6_lab")], function(x) {gsub("<br>", "", x)})
 
+
 ## (3) transform DVs
 
 # create numeric rate variable
-dat$rate <- as.character(dat$rate)
-dat$rate[which(dat$rate == "Lehne voll und ganz ab")] <- 1
-dat$rate[which(dat$rate == "Lehne ab")] <- 2
-dat$rate[which(dat$rate == "Weder noch")] <- 3
-dat$rate[which(dat$rate == "Unterstütze")] <- 4
-dat$rate[which(dat$rate == "Unterstütze voll und ganz")] <- 5
 dat$rate <- as.numeric(dat$rate)
+# dat$rate[which(dat$rate == "Lehne voll und ganz ab")] <- 1
+# dat$rate[which(dat$rate == "Lehne ab")] <- 2
+# dat$rate[which(dat$rate == "Weder noch")] <- 3
+# dat$rate[which(dat$rate == "Unterstütze")] <- 4
+# dat$rate[which(dat$rate == "Unterstütze voll und ganz")] <- 5
+# dat$rate <- as.numeric(dat$rate)
 
-# create numeric activism_rate variable
-dat$rate_activism <- as.character(dat$rate_activism)
-dat$rate_activism[dat$rate_activism == "Viel Aufwand zur Verhinderung"] <- 1
-dat$rate_activism[dat$rate_activism == "Etwas Aufwand zur Verhinderung"] <- 2
-dat$rate_activism[dat$rate_activism == "Weder noch"] <- 3
-dat$rate_activism[dat$rate_activism == "Etwas Aufwand zur Unterstützung"] <- 4
-dat$rate_activism[dat$rate_activism == "Etwas Aufwand zur Unterstzützung"] <- 4 # typo in the questionnaire
-dat$rate_activism[dat$rate_activism == "Viel Aufwand zur Unterstützung"] <- 5
-dat$rate_activism <- as.numeric(dat$rate_activism)
 
 ## (4) create numeric attributes
 dat[, "Attrib1"] <- ""
-dat$Attrib1[grepl('40', dat$attrib1_lab)] <- 1
-dat$Attrib1[grepl('50', dat$attrib1_lab)] <- 2
-dat$Attrib1[grepl('60', dat$attrib1_lab)] <- 3
-dat$Attrib1[grepl('70', dat$attrib1_lab)] <- 4
-dat$Attrib1[grepl('80', dat$attrib1_lab)] <- 5
+dat$Attrib1[grepl("Agri-PV systems on greenhouses and replacement of polytunnels", dat$attrib1_lab)] <- 1
+dat$Attrib1[grepl("Horizontal open space Agri-PV systems on pasture or arable land", dat$attrib1_lab)] <- 2
+dat$Attrib1[grepl("Vertical open space Agri-PV systems on pasture or arable land", dat$attrib1_lab)] <- 3
 
 dat[, "Attrib2"] <- ""
-dat$Attrib2[grepl('0 Fr./t', dat$attrib2_lab)] <- 1
-dat$Attrib2[grep('60 Fr./t', dat$attrib2_lab)] <- 2
-dat$Attrib2[grepl('120 Fr./t', dat$attrib2_lab)] <- 3
-dat$Attrib2[grepl('180 Fr./t', dat$attrib2_lab)] <- 4
-dat$Attrib2[grepl('240 Fr./t', dat$attrib2_lab)] <- 5
+dat$Attrib2[grepl('1ha', dat$attrib2_lab)] <- 1
+dat$Attrib2[grep('5ha', dat$attrib2_lab)] <- 2
+dat$Attrib2[grepl('10ha', dat$attrib2_lab)] <- 3
 
 dat[, "Attrib3"] <- ""
-dat$Attrib3[grepl('0 Fr./t', dat$attrib3_lab)] <- 1
-dat$Attrib3[grepl('60 Fr./t', dat$attrib3_lab)] <- 2
-dat$Attrib3[grepl('120 Fr./t', dat$attrib3_lab)] <- 3
-dat$Attrib3[grepl('180 Fr./t', dat$attrib3_lab)] <- 4
-dat$Attrib3[grepl('240 Fr./t', dat$attrib3_lab)] <- 5
+dat$Attrib3[grepl('0-500', dat$attrib3_lab)] <- 1
+dat$Attrib3[grepl('500-1500', dat$attrib3_lab)] <- 2
+dat$Attrib3[grepl('1500-4500', dat$attrib3_lab)] <- 3
 
 dat[, "Attrib4"] <- ""
-dat$Attrib4[grepl('0 Fr./t', dat$attrib4_lab)] <- 1
-dat$Attrib4[grepl('60 Fr./t', dat$attrib4_lab)] <- 2
-dat$Attrib4[grepl('120 Fr./t', dat$attrib4_lab)] <- 3
-dat$Attrib4[grepl('180 Fr./t', dat$attrib4_lab)] <- 4
-dat$Attrib4[grepl('240 Fr./t', dat$attrib4_lab)] <- 5
+dat$Attrib4[grepl('Municipality', dat$attrib4_lab)] <- 1
+dat$Attrib4[grepl('Regional energy supplier', dat$attrib4_lab)] <- 2
+dat$Attrib4[grepl('Farmers', dat$attrib4_lab)] <- 3
+dat$Attrib4[grepl('Landowner', dat$attrib4_lab)] <- 4
+dat$Attrib4[grepl('Energy cooperative', dat$attrib4_lab)] <- 5
+dat$Attrib4[grepl('External', dat$attrib4_lab)] <- 6
 
 dat[, "Attrib5"] <- ""
-dat$Attrib5[grepl('No tax on private flights', dat$attrib5_lab)] <- 1
-dat$Attrib5[grepl('10 Fr.', dat$attrib5_lab)] <- 2
-dat$Attrib5[grepl('25 Fr.', dat$attrib5_lab)] <- 3
-dat$Attrib5[grepl('40 Fr.', dat$attrib5_lab)] <- 4
-dat$Attrib5[grepl('55 Fr.', dat$attrib5_lab)] <- 5
+dat$Attrib5[grepl('0-5%', dat$attrib5_lab)] <- 1
+dat$Attrib5[grepl('6-10%', dat$attrib5_lab)] <- 2
+dat$Attrib5[grepl('11-20%', dat$attrib5_lab)] <- 3
+dat$Attrib5[grepl('21-40%', dat$attrib5_lab)] <- 4
+dat$Attrib5[grepl('41-80%', dat$attrib5_lab)] <- 5
 
 dat[, "Attrib6"] <- ""
-dat$Attrib6[grepl("Exclusively lump sum reimbursement", dat$attrib6_lab)] <- 1
-dat$Attrib6[grepl("Mostly lump sum reimbursement", dat$attrib6_lab)] <- 2
-dat$Attrib6[grepl("Lump sum reimbursement und investment into climate protection", dat$attrib6_lab)] <- 3
-dat$Attrib6[grepl("Mostly investment into climate protection", dat$attrib6_lab)] <- 4
-dat$Attrib6[grepl("Exclusively investment into climate protection", dat$attrib6_lab)] <- 5
+dat$Attrib6[grepl('0-5%', dat$attrib6_lab)] <- 1
+dat$Attrib6[grepl('6-10%', dat$attrib6_lab)] <- 2
+dat$Attrib6[grepl('11-20%', dat$attrib6_lab)] <- 3
+dat$Attrib6[grepl('21-40%', dat$attrib6_lab)] <- 4
+dat$Attrib6[grepl('41-80%', dat$attrib6_lab)] <- 5
+
+dat[, "Attrib7"] <- ""
+dat$Attrib7[grepl('0-5%', dat$attrib7_lab)] <- 1
+dat$Attrib7[grepl('6-10%', dat$attrib7_lab)] <- 2
+dat$Attrib7[grepl('11-20%', dat$attrib7_lab)] <- 3
+dat$Attrib7[grepl('21-40%', dat$attrib7_lab)] <- 4
+dat$Attrib7[grepl('41-80%', dat$attrib7_lab)] <- 5
 
 # replace parentheses because they seem to create problems when reading the data into the function
 dat$attrib2_lab <- gsub("\\s*\\([^\\)]+\\)", "", as.character(dat$attrib2_lab))
@@ -400,360 +429,648 @@ dat$attrib3_lab <- gsub("\\s*\\([^\\)]+\\)", "", as.character(dat$attrib3_lab))
 dat$attrib4_lab <- gsub("\\s*\\([^\\)]+\\)", "", as.character(dat$attrib4_lab))
 dat$attrib5_lab <- gsub("\\s*\\([^\\)]+\\)", "", as.character(dat$attrib5_lab))
 dat$attrib6_lab <- gsub("\\s*\\([^\\)]+\\)", "", as.character(dat$attrib6_lab))
+dat$attrib7_lab <- gsub("\\s*\\([^\\)]+\\)", "", as.character(dat$attrib7_lab))
 
 ## (4) reformat
 # transform all to factor
-dat[,  c("Attrib1", "Attrib2", "Attrib3", "Attrib4", "Attrib5", "Attrib6")] <- sapply(dat[,  c("Attrib1", "Attrib2", "Attrib3", "Attrib4", "Attrib5", "Attrib6")], as.factor)
+dat[,  c("Attrib1", "Attrib2", "Attrib3", "Attrib4", "Attrib5", "Attrib6", "Attrib7")] <- sapply(dat[,  c("Attrib1", "Attrib2", "Attrib3", "Attrib4", "Attrib5", "Attrib6", "Attrib7")], as.factor)
 
 # transform all to factor with ordered levels
-dat$attrib1_lab <- factor(dat$attrib1_lab)
-dat$attrib2_lab <- factor(dat$attrib2_lab, levels = c("No tax on petrol", "0.14 Fr./l petrol", "0.28 Fr./l petrol", "0.42 Fr./l petrol", "0.56 Fr./l petrol"))
-dat$attrib3_lab <- factor(dat$attrib3_lab, levels = c("No tax on heating oil", "0.16 Fr./l heating oil", "0.31 Fr./l heating oil", "0.47 Fr./l heating oil", "0.63 Fr./l heating oil"))
-dat$attrib4_lab <- factor(dat$attrib4_lab, levels = c("No tax on meat", "0.77 Fr./kg meat", "1.53 Fr./kg meat", "2.30 Fr./kg meat", "3.07 Fr./kg meat"))
-dat$attrib5_lab <- factor(dat$attrib5_lab, levels = c("No tax on private flights", "10 Fr. for short- and 30 Fr. for long-distance", "25 Fr. for short- and 75 Fr. for long-distance", "40 Fr. for short- and 120 Fr. for long-distance", "55 Fr. for short- and 165 Fr. for long-distance"))
-dat$attrib6_lab <- factor(dat$attrib6_lab, levels = c("Exclusively lump sum reimbursement", "Mostly lump sum reimbursement", "Lump sum reimbursement und investment into climate protection", "Mostly investment into climate protection", "Exclusively investment into climate protection"))
+dat$attrib1_lab <- factor(dat$attrib1_lab, levels = c("Agri-PV systems on greenhouses and replacement of polytunnels", "Horizontal open space Agri-PV systems on pasture or arable land", "Vertical open space Agri-PV systems on pasture or arable land"))
+dat$attrib2_lab <- factor(dat$attrib2_lab, levels = c("Up to one football pitch", "Up to 5 football pitches", "Up to 10 football pitches"))
+dat$attrib3_lab <- factor(dat$attrib3_lab, levels = c("0-500 meters", "500-1500 meters", "1500-4500 meters"))
+dat$attrib4_lab <- factor(dat$attrib4_lab, levels = c("Municipality", "Regional energy supplier", "Farmers", "Landowner", "Energy cooperative", "External investors"))
+dat$attrib5_lab <- factor(dat$attrib5_lab, levels = c("0-5% reduction in crop yield", "6-10% reduction in crop yield", "11-20% reduction in crop yield", "21-40% reduction in crop yield", "41-80% reduction in crop yield"))
+dat$attrib6_lab <- factor(dat$attrib6_lab, levels = c("0-5% increase in own production", "6-10% increase in own production ", "11-20% increase in own production", "21-40% Erhöhung der Eigenproduktion", "41-80% Erhöhung der Eigenproduktion"))
+dat$attrib7_lab <- factor(dat$attrib7_lab, levels = c("0-5% higher income", "6-10% higher income", "11-20% higher income", "21-40% higher income", "41-80% higher income"))
 
+dat$choice <- ifelse(dat$choice == 2, 1, 0)
+
+dat$rate_binary <- ifelse(dat$rate > 4, 1, 0)
 ######################################################
 # recode explanatory variables
 ######################################################
 
-# (1) benefits
-dat$prior_benefit[dat$QID565 %in% c("Stark beeinflusst", "Etwas beeinflusst")] <- 1
-dat$prior_benefit[dat$QID565 %in% c("Eher nicht beeinflusst", "Überhaupt nicht beeinflusst")] <- 0
 
-dat$prior_benefit_2[dat$QID565 %in% c("Stark beeinflusst")] <- 5
-dat$prior_benefit_2[dat$QID565 %in% c("Etwas beeinflusst")] <- 4
-dat$prior_benefit_2[dat$QID565 %in% c("Weiss nicht / keine Antwort")] <- NA
-dat$prior_benefit_2[dat$QID565 %in% c("Eher nicht beeinflusst")] <- 2
-dat$prior_benefit_2[dat$QID565 %in% c("Überhaupt nicht beeinflusst")] <- 1
+# # (1) benefits
+# dat$prior_benefit[dat$QID565 %in% c("Stark beeinflusst", "Etwas beeinflusst")] <- 1
+# dat$prior_benefit[dat$QID565 %in% c("Eher nicht beeinflusst", "Überhaupt nicht beeinflusst")] <- 0
+# 
+# dat$prior_benefit_2[dat$QID565 %in% c("Stark beeinflusst")] <- 5
+# dat$prior_benefit_2[dat$QID565 %in% c("Etwas beeinflusst")] <- 4
+# dat$prior_benefit_2[dat$QID565 %in% c("Weiss nicht / keine Antwort")] <- NA
+# dat$prior_benefit_2[dat$QID565 %in% c("Eher nicht beeinflusst")] <- 2
+# dat$prior_benefit_2[dat$QID565 %in% c("Überhaupt nicht beeinflusst")] <- 1
+# 
+# table(dat$prior_benefit)
+# 
+# # (2) charging stations to numeric
+# dat$no_of_stations_ev <- as.numeric(dat$no_of_stations_ev)
+# 
+# # (3) housing
+# dat$home_owner[dat$QID515 == "Ja"] <- 1
+# dat$home_owner[dat$QID515 == "Nein"] <- 0
+# table(dat$home_owner)
+# 
+# dat$renew_heating <- ifelse(grepl("Gasheizung|Ölheizung", dat$QID517) == F, 1, 0)
+# 
+# # (2) driving
+# dat$driver[dat$QID519 == "Ja, eins" | dat$QID519== "Ja, mehere"] <- 1
+# dat$driver[dat$QID519 == "Nein"] <- 0
+# table(dat$driver)
+# dat$ren_driver <- ifelse(grepl("Strom|Erdgas|Biotreibstoffe", dat$QID535) & !is.na(dat$QID535), 1, 0)
+# 
+# dat$vege <- ifelse(dat$QID582 == "Ja", 0, 1)
+# 
+# # (8) co2 law beliefs
+# # is forced choice
+# transform <- function(x){
+#   unlist(lapply(x, function(x)
+#     if (is.na(x)) {NA} 
+#     else if (x == "Voll und ganz") {5}
+#     else if (x == "Eher") {4}
+#     else if (x == "Weder noch") {3}
+#     else if (x == "Eher nicht") {2}
+#     else if (x == "Ganz und gar nicht") {1}
+#   )
+#   )
+# }
+# 
+# dat$co2_law_effect <- transform(dat$QID82_1)
+# dat$co2_law_effic <- transform(dat$QID82_2)
+# dat$co2_law_compet <- transform(dat$QID82_3)
+# dat$co2_law_just <- transform(dat$QID82_4)
+# dat$co2_law_transf <- transform(dat$QID82_5)
+# table(dat$co2_law_transf, useNA = "always") 
+# 
+# 
+# 
+# ## (9) salience, # no 0_2:0_4 not in excel file
+# # top
+# dat$top_sal_ahv <- ifelse(dat$QID432_0_1_RANK == "1.0" & !is.na(dat$QID432_0_1_RANK), 1, 0) # Altersvorsorge/AHV
+# dat$top_sal_unemp <- ifelse(dat$QID432_0_5_RANK == "1.0" & !is.na(dat$QID432_0_5_RANK), 1, 0) # Arbeitslosigkeit
+# dat$top_sal_refug <- ifelse(dat$QID432_0_6_RANK == "1.0" & !is.na(dat$QID432_0_6_RANK), 1, 0) # Flüchtlinge
+# dat$top_sal_eu <- ifelse(dat$QID432_0_7_RANK == "1.0" & !is.na(dat$QID432_0_7_RANK), 1, 0) # Verhältnis der Schweiz zur Europäischen Union
+# dat$top_sal_health <- ifelse(dat$QID432_0_8_RANK == "1.0" & !is.na(dat$QID432_0_8_RANK), 1, 0) # Gesundheitswesen / Krankenversicherung
+# dat$top_sal_energy <- ifelse(dat$QID432_0_9_RANK == "1.0" & !is.na(dat$QID432_0_9_RANK), 1, 0) # Energieversorgung
+# dat$top_sal_traff <- ifelse(dat$QID432_0_10_RANK == "1.0" & !is.na(dat$QID432_0_10_RANK), 1, 0) # Verkehr
+# dat$top_sal_glob <- ifelse(dat$QID432_0_11_RANK == "1.0" & !is.na(dat$QID432_0_11_RANK), 1, 0) # Globalisierung der Wirtschaft / Freihandel
+# dat$top_sal_env <- ifelse(dat$QID432_0_12_RANK == "1.0" & !is.na(dat$QID432_0_12_RANK), 1, 0) # Umweltschutz / Klimawandel
+# dat$top_sal_crim <- ifelse(dat$QID432_0_13_RANK == "1.0" & !is.na(dat$QID432_0_13_RANK), 1, 0) # Kriminalität
+# dat$top_sal_uneq <- ifelse(dat$QID432_0_14_RANK == "1.0" & !is.na(dat$QID432_0_14_RANK), 1, 0) # Ungleichheit bei Einkommen und Vermögen
+# dat$top_sal_cult <- ifelse(dat$QID432_0_15_RANK == "1.0" & !is.na(dat$QID432_0_15_RANK), 1, 0) # Zusammenleben von Menschen unterschiedlicher Kulturen und Religionen
+# dat$top_sal_for <- ifelse(dat$QID432_0_16_RANK == "1.0" & !is.na(dat$QID432_0_16_RANK), 1, 0) # Ausländische Arbeitskräfte in der Schweiz
+# dat$top_sal_pop <- ifelse(dat$QID432_0_17_RANK == "1.0" & !is.na(dat$QID432_0_17_RANK), 1, 0) # Zunahme der Schweizer Wohnbevölkerung / Zersiedelung / Verstädterung
+# table(dat$top_sal_pop, useNA = "always") 
+# 
+# # any of three
+# dat$sal_ahv <- ifelse(is.na(dat$QID432_0_1_RANK), 0, 1)
+# dat$sal_unemp <- ifelse(is.na(dat$QID432_0_5_RANK), 0, 1)
+# dat$sal_refug <- ifelse(is.na(dat$QID432_0_6_RANK), 0, 1)
+# dat$sal_eu <- ifelse(is.na(dat$QID432_0_7_RANK), 0, 1)
+# dat$sal_health <- ifelse(is.na(dat$QID432_0_8_RANK), 0, 1)
+# dat$sal_energy <- ifelse(is.na(dat$QID432_0_9_RANK), 0, 1)
+# dat$sal_traff <- ifelse(is.na(dat$QID432_0_10_RANK), 0, 1) 
+# dat$sal_glob <- ifelse(is.na(dat$QID432_0_11_RANK), 0, 1)
+# dat$sal_env <- ifelse(is.na(dat$QID432_0_12_RANK), 0, 1)
+# dat$sal_crim <- ifelse(is.na(dat$QID432_0_13_RANK), 0, 1)
+# dat$sal_uneq <- ifelse(is.na(dat$QID432_0_14_RANK), 0, 1)
+# dat$sal_cult <- ifelse(is.na(dat$QID432_0_15_RANK), 0, 1)
+# dat$sal_for <- ifelse(is.na(dat$QID432_0_16_RANK), 0, 1)
+# dat$sal_pop <- ifelse(is.na(dat$QID432_0_17_RANK), 0, 1)
+# table(dat$sal_pop, useNA = "always") 
+# 
+# transform <- function(x){
+#   unlist(lapply(x, function(x)
+#     if (is.na(x)) {NA} 
+#     else if (x == "Unterstütze voll und ganz") {5}
+#     else if (x == "Unterstütze eher") {4}
+#     else if (x == "Weder noch") {3}
+#     else if (x == "Lehne eher ab") {2}
+#     else if (x == "Lehne voll und ganz ab") {1}
+#   )
+#   )
+# }
+# # (10) swiss climate policy beliefs
+# dat$swiss_pol_comp <- transform(dat$QID76_1)
+# dat$swiss_pol_effect <- transform(dat$QID76_2)
+# dat$swiss_pol_effic <-transform( dat$QID76_3)
+# dat$swiss_pol_just <- transform(dat$QID76_4)
+# dat$swiss_pol_lead <- transform(dat$QID76_5)
+# dat$swiss_pol_vol <- transform(dat$QID76_6)
+# dat$swiss_pol_subs <- transform(dat$QID76_7) 
+# dat$swiss_pol_tax <- transform(dat$QID76_8)
+# dat$swiss_pol_regu <- transform(dat$QID76_9)
+# dat$swiss_pol_tech <- transform(dat$QID76_10)
+# dat$swiss_pol_beha <- transform(dat$QID76_11)
+# dat$swiss_pol_comb <- transform(dat$QID76_12)
+# dat$swiss_pol_fed <- transform(dat$QID76_13)
+# table(dat$swiss_pol_fed, useNA = "always") 
+# 
+# ## demographics
+# # (10) demos: education
+# dat$educ[dat$QID16 == "Keine Ausbildung abgeschlossen" | 
+#          dat$QID16 == "Ich bin noch in der obligatorischen Schule" |
+#          dat$QID16 == "Obligatorische Schule" |
+#          dat$QID16 == "Übergangsausbildung (z.B. Anlehre, 10. Schuljahr, Haushaltsjahr, Sprachschule mit Zertifikat)"] <- 0
+# dat$educ[dat$QID16 == "Berufslehre, BMS, Vollzeitberufsschule (Handelsmittelschule/Lehrwerkstätte)" | 
+#            dat$QID16 == "Berufsmaturität" |
+#            dat$QID16 == "Diplommittelschule, allgemein bild. Schule ohne Maturität (Verkehrsschule)" |
+#            dat$QID16 == "Maturitätsschule, Lehrkräfte-Seminar (vorbereitende Ausbildung für Lehrkräfte von Kindergarten, Primarschule, Handarbeit, Hauswirtschaft)"] <- 1
+# dat$educ[dat$QID16 == "Höhere Berufsausbildung mit Meisterdiplom, Eidg. Fachausweis" | 
+#            dat$QID16 == "Techniker- oder Fachschule (2 Jahre Voll- oder 3 Jahre Teilzeit)" |
+#            dat$QID16 == "Höhere Fachschule/Fachhochschule, HTL, HMV (3 Jahre Voll- oder 4 Jahre Teilzeit)" |
+#            dat$QID16 == "Universität, ETH, Fachhochschule, Pädagogische Hochschule"] <- 2
+# table(dat$educ, useNA = "always") # Weiss nicht / keine Antwort --> NA
+# # dat$educ <- ifelse(is.na(dat$educ), median(dat$educ), dat$educ)
+# 
+# # (11) demos: employment condition
+# dat$empl_cond <- 0 # 
+# dat$empl_cond[grepl("Teilzeit arbeitstätig (21-34.9 Std. pro Woche)", dat$QID19) == T | 
+#                 grepl("Teilzeit arbeitstätig (9-20.9 Std. pro Woche)", dat$QID19) == T |
+#                 grepl("Teilzeit arbeitstätig (1-8.9 Std. pro Woche)", dat$QID19) == T ] <- 1
+# dat$empl_cond[grepl("Vollzeit arbeitstätig (35 Std. und mehr pro Woche)", dat$QID19) == T ] <- 2
+# table(dat$empl_cond, useNA = "always") # Weiss nicht / keine Antwort --> NA
+# 
+# # (11) demos: employment sect 
+# dat$empl_sect <- 0 # includes all those with "Weiss nicht / keine Antwort" and all those those that do not work
+# dat$empl_sect[dat$QID20 == "Primärer Sektor, u.a. Landwirtschaft, Forstwirtschaft"] <- 1
+# dat$empl_sect[dat$QID20 == "Sekundärer Sektor, u.a. Industrie, Gewerbe, Handwerk"] <- 2
+# dat$empl_sect[dat$QID20 == "Tertiärer Sektor, u.a. Dienstleistungen, Verwaltungen"] <- 3
+# table(dat$empl_sect, useNA = "always") # Weiss nicht / keine Antwort --> NA
+# 
+# # (12) demos: financial conditions
+# dat$fin_cond[dat$QID21 == "Ja"] <- 3
+# dat$fin_cond[dat$QID21 == "Es geht so"] <- 2
+# dat$fin_cond[dat$QID21 == "Nein"] <- 1
+# dat$fin_cond[dat$QID21 == "Weiss nicht / keine Antwort"] <- 0
+# table(dat$fin_cond, useNA = "always") # Weiss nicht / keine Antwort --> NA
+# 
+# dat$age[dat$QID2 == "18 bis 24 Jahre"] <- 1
+# dat$age[dat$QID2 == "25 bis 34 Jahre"] <- 2
+# dat$age[dat$QID2 == "35 bis 44 Jahre"] <- 3
+# dat$age[dat$QID2 == "45 bis 54 Jahre"] <- 4
+# dat$age[dat$QID2 == "55 bis 64 Jahre"] <- 5
+# dat$age[dat$QID2 == "65 bis 74 Jahre"] <- 6
+# dat$age[dat$QID2 == "75+ Jahre"] <- 7
+# 
+# # gender
+# dat$gender[dat$QID3 == "Mann"] <- 1
+# dat$gender[dat$QID3 == "Frau"] <- 0
+# 
+# # language
+# unique(dat$Q_Language)
+# dat$language[dat$Q_Language == "FR"] <- 1
+# dat$language[dat$Q_Language == "DE"] <- 0
+# 
+# # (13) demos: left-right
+# sum(is.na(dat$QID27_1))/sum(!is.na(dat$QID27_1)) # 12% NA, keine Antwort 
+# dat$left_right <- as.numeric(dat$QID27_1)
+# 
+# # demos not included: civil status (QID17), political party preference (QID28) has less NAs than left-right
+# 
+# # recode number of stations
+# dat$no_of_stations_ev_1 <- factor(ifelse(dat$no_of_stations_ev >=1, 1, 0))
+# dat$no_of_stations_ev_2 <- factor(ifelse(dat$no_of_stations_ev >=2, 1, 0))
+# dat$no_of_stations_ev_3 <- factor(ifelse(dat$no_of_stations_ev >=3, 1, 0))
+# dat$no_of_stations_ev_4 <- factor(ifelse(dat$no_of_stations_ev >=4, 1, 0))
+# dat$no_of_stations_ev_5 <- factor(ifelse(dat$no_of_stations_ev >=5, 1, 0))
+# 
+# dat$ratio_ev_to_muni_area <- as.numeric(dat$ratio_ev_to_muni_area)
+# 
+# unique(dat$QID4)
+# dat$region[dat$QID4 %in% c("Waadt", "Genf", "Valais (francophone)", "Wallis (deutschsprachig)")] <- 1 # Genfersee Region
+# dat$region[dat$QID4 %in% c("Berne (francophone)", "Bern (deutschsprachig)", "Solothurn", "Neuchâtel", "Jura", "Fribourg (francophone)", "Freiburg (deutschsprachig)")] <- 2 # Mittelland
+# dat$region[dat$QID4 %in% c("Aargau", "Basel-Landschaft", "Basel-Stadt")] <- 3 # Nordwestschweiz
+# dat$region[dat$QID4 %in% c("Zürich")] <- 4 # Zürich 
+# dat$region[dat$QID4 %in% c("St. Gallen", "Thurgau", "Schaffhausen", "Graubünden/Grischun (deutsch/rätoromanisch)", "Appenzell-Ausserrhoden", "Appenzell-Innerrhoden" )] <- 5 # Ostschweiz
+# dat$region[dat$QID4 %in% c("Schwyz", "Luzern", "Zug", "Glarus", "Nidwalden", "Obwalden", "Uri")] <- 6 # Zentralschweiz
+# dat$region[dat$QID4 %in% c("Tessin")] <- 7 # Tessin
+# table(dat$region, useNA = "always")
+# 
+# library(sf)
+# rural_urban <- read_csv("geoDaten/plz_merged_raumtypo/plz_raumtypo.csv")
+# rural_urban <- rural_urban[!duplicated(rural_urban$plz),]
+# table(rural_urban$Kategorien, useNA = "always")
+# 
+# nrow(dat)  
+# dat <- left_join(dat, rural_urban, by = c("plz"))
+# nrow(dat)
+# 
+# dat$urban_rural[grepl("1", dat$Kategorien)] <- 1
+# dat$urban_rural[grepl("2", dat$Kategorien)] <- 2
+# dat$urban_rural[grepl("3", dat$Kategorien)] <- 3
+# table(dat$urban_rural, useNA = "always")
+# unique(dat$plz[is.na(dat$urban_rural)])
+# 
+# unique(dat$plz[!is.na(dat$urban_rural) & is.na(dat$ratio_ev_to_muni_area)])
+# unique(dat$plz[!is.na(dat$urban_rural) & is.na(dat$ratio_ev_to_muni_area)])
+# 
+# 
+# vars_to_transform2 <- c("prior_benefit_2", "sal_env", "sal_glob", "driver", "ren_driver", "educ", "fin_cond", "age",
+#                        "home_owner", "empl_sect")
+# 
+# # need to be factors for conjoint
+# dat[vars_to_transform2] <- lapply(dat[vars_to_transform2], factor)
+# 
+# 
+# dat_desc <- dat %>% 
+#   dplyr::select(rate, choice, prior_benefit_2, ratio_ev_to_muni_area, driver, home_owner, age, educ, language, empl_sect, fin_cond, 
+#                 left_right, sal_glob, sal_env, region, urban_rural) %>% 
+#   mutate("Region: Geneva" = ifelse(region == 1, 1, 0), 
+#          "Region: Middle Land" = ifelse(region == 2, 1, 0),
+#          "Region: North East" = ifelse(region == 3, 1, 0),
+#          "Region: Zurich" = ifelse(region == 4, 1, 0),
+#          "Region: East" = ifelse(region == 5, 1, 0),
+#          "Region: Central" = ifelse(region == 6, 1, 0),
+#          "Region: Ticino" = ifelse(region == 7, 1, 0),
+#          "Urban Area" = ifelse(urban_rural == 1, 1, 0),
+#          "Intermediate Area" = ifelse(urban_rural == 2, 1, 0),
+#          "Rural Area" = ifelse(urban_rural == 3, 1, 0),) %>% 
+#   dplyr::select(-region, -urban_rural) %>% 
+#   mutate_all(as.character) %>% 
+#   mutate_all(as.numeric) 
+# 
+# p_desc <- dat_desc %>% 
+#   mutate(ratio_ev_to_muni_area = round(ratio_ev_to_muni_area, 0)) %>% 
+#   pivot_longer(., everything(), names_to = "Question", values_to = "Response") %>% 
+#   mutate(Question = factor(Question, levels = c("rate", "choice", "prior_benefit_2", "ratio_ev_to_muni_area", "driver", "home_owner", "age",
+#                                                 "educ", "language", "empl_sect", "fin_cond", 
+#                                                 "left_right", "sal_glob", "sal_env",
+#                                                 "Region: Geneva",
+#                                                 "Region: Middle Land",
+#                                                 "Region: North East",
+#                                                 "Region: Zurich",
+#                                                 "Region: East",
+#                                                 "Region: Central",
+#                                                 "Region: Ticino",
+#                                                 "Urban Area",
+#                                                 "Intermediate Area",
+#                                                 "Rural Area"))) %>% 
+#   group_by(Question, Response) %>% 
+#   count(name = "freq") %>% 
+#   mutate(Response = factor(Response, levels = as.character(c(0:14, NA)))) %>% 
+#   ggplot(aes(x = Response, y = freq)) +
+#   geom_col() + labs(x = "", y = "") +
+#   facet_wrap(~Question, scales = "free_x", 
+#              labeller = labeller(Question = c("driver" = "Driver",
+#                                               "educ" = "Education",
+#                                               "age" = "Age",
+#                                               "empl_sect" = "Employment Sector",
+#                                               "fin_cond" = "Financial Condition",
+#                                               "home_owner" = "Home Owner",
+#                                               "left_right" = "Left−Right",
+#                                               "prior_benefit_2" = "Perceived Effectiveness\n of Prior Benefits",
+#                                               "rate" = "Support \n(Rate Outcome)",
+#                                               "choice" = "Support \n(Choice Outcome)",
+#                                               "ratio_ev_to_muni_area" = "EV Charging Stations",
+#                                               "sal_env" = "Salience: \nEnvironment and Climate",
+#                                               "sal_glob" = "Salience: \nGlobalisation",
+#                                               "language" = "French",
+#                                               "Urban Area" = "Urban Area",
+#                                               "Intermediate Area" = "Intermediate Area",
+#                                               "Rural Area"  = "Rural Area",
+#                                               "Region: Geneva" = "Region: Geneva",
+#                                               "Region: Middle Land" = "Region: Middle Land",
+#                                               "Region: North East" = "Region: North East",
+#                                               "Region: Zurich" = "Region: Zurich",
+#                                               "Region: East" = "Region: East",
+#                                               "Region: Central" = "Region: Central",
+#                                               "Region: Ticino" = "Region: Ticino"))) +
+#   theme_light()
+# p_desc
+# ggsave(p_desc, filename = "Plots/p_desc.pdf", height = 16, width = 10)
+# 
+# 
+# labs_desc <- c("Support (Rate Outcome)", "Support (Choice Outcome)", "Perceived Effectiveness of Prior Benefits",
+#                "EV Charging Stations",  "Driver", "Home Owner", "Age", "Education", "French",
+#                "Employment Sector", "Financial Condition", "Left-Right", "Salience: Globalisation", "Salience: Environment and Climate",
+#                "Region: Geneva", "Region: Middle Land", "Region: North East", "Region: Zurich", "Region: East", "Region: Central", "Region: Ticino", "Urban Area", "Intermediate Area", "Rural Area")
+# 
+# library(stargazer)
+# stargazer(dat_desc,
+#           out.header = F,
+#           no.space = TRUE, 
+#           label = "tab:summary_stats",
+#           column.sep.width = "3pt",
+#           font.size = "footnotesize",
+#           covariate.labels = labs_desc,
+#           out = "Tables/summary_stats.tex"
+#           )
+# 
+# library(Hmisc)
+# correlation_matrix <- cor(dat_desc %>% mutate_all(., as.numeric), use = "pairwise.complete.obs")
+# correlation_matrix <- round(correlation_matrix, 2)
+# correlation_matrix[upper.tri(correlation_matrix)] <- NA
+# diag(correlation_matrix) <- NA
+# colnames(correlation_matrix) <- rownames(correlation_matrix) <- labs_desc
+# correlation_matrix1 <- correlation_matrix[,1:12]
+# correlation_matrix2 <- correlation_matrix[,13:ncol(correlation_matrix)]
+# 
+# stargazer(correlation_matrix1, title="Correlation Matrix Part 1", 
+#           float.env = "sidewaystable", 
+#           type = "latex", 
+#           out.header = F,
+#           no.space = TRUE, # to remove the spaces after each line of coefficients
+#           column.sep.width = "1pt", # to reduce column width
+#           font.size = "footnotesize", # to make font size smaller
+#           label = "tab:correlation_pt1",
+#           out = "Tables/correlation_pt1.tex"
+#           # covariate.labels = labs_desc,
+#           # dep.var.labels = labs_desc
+# )
+# stargazer(correlation_matrix2, title="Correlation Matrix  Part 2", 
+#           float.env = "sidewaystable", 
+#           type = "latex", 
+#           out.header = F,
+#           no.space = TRUE, # to remove the spaces after each line of coefficients
+#           column.sep.width = "1pt", # to reduce column width
+#           font.size = "footnotesize", # to make font size smaller
+#           label = "tab:correlation_pt2",
+#           out = "Tables/correlation_pt2.tex"
+# )
+library(cregg)
+library(ggsci)
+dat <- dat %>% mutate(NIMBY = as.factor(NIMBY),
+                      environment_score = ifelse(environment_score >3.5, 1, 0),
+                      environment_score = as.factor(environment_score, levels = c(0, 1)))
 
-table(dat$prior_benefit)
+dat <- dat %>% 
+  mutate(left_right_bins = case_when(left_right <=3 ~ "Left",
+                                left_right >=4 & left_right <=6 ~ "Centre",
+                                left_right >=7 ~ "Right")) %>% 
+  mutate(left_right_bins = factor(left_right_bins, levels = c("Left", "Centre", "Right")))
 
-# (2) charging stations to numeric
-dat$no_of_stations_ev <- as.numeric(dat$no_of_stations_ev)
+model1 <- lm(choice ~ attrib1_lab + attrib2_lab +  attrib3_lab +  attrib4_lab + attrib5_lab + attrib6_lab + attrib7_lab, data = dat %>% filter(NIMBY == 0))
+summary(model1)
 
-# (3) housing
-dat$home_owner[dat$QID515 == "Ja"] <- 1
-dat$home_owner[dat$QID515 == "Nein"] <- 0
-table(dat$home_owner)
+amce <- cj(data = dat %>% filter(NIMBY == 0), rate_binary ~ attrib1_lab + attrib2_lab + attrib3_lab + attrib4_lab + attrib5_lab + attrib6_lab + attrib7_lab, id = ~id, estimate = "amce")
+amce
 
-dat$renew_heating <- ifelse(grepl("Gasheizung|Ölheizung", dat$QID517) == F, 1, 0)
+p_baseline <- amce %>% 
+  mutate(
+    level = factor(level, levels = c("Agri-PV systems on greenhouses and replacement of polytunnels", "Horizontal open space Agri-PV systems on pasture or arable land", "Vertical open space Agri-PV systems on pasture or arable land", 
+                                     "Up to one football pitch", "Up to 5 football pitches", "Up to 10 football pitches", 
+                                     "0-500 meters", "500-1500 meters", "1500-4500 meters", 
+                                     "Municipality", "Regional energy supplier", "Farmers", "Landowner", "Energy cooperative", "External investors", 
+                                     "0-5% reduction in crop yield", "6-10% reduction in crop yield", "11-20% reduction in crop yield", "21-40% reduction in crop yield", "41-80% reduction in crop yield", 
+                                     "0-5% increase in own production", "6-10% increase in own production ", "11-20% increase in own production", "21-40% Erhöhung der Eigenproduktion", "41-80% Erhöhung der Eigenproduktion", 
+                                     "0-5% higher income", "6-10% higher income", "11-20% higher income", "21-40% higher income", "41-80% higher income"))
+    # by = factor(BY, levels = c("0", "1")),
+         # feature_lab = "",
+         # feature_lab = ifelse(feature == "attrib1_lab", "Recipient developing country", feature_lab),
+         # feature_lab = ifelse(feature == "attrib2_lab", "Number of climate\nmigrants to accept\nfrom this country per year", feature_lab),
+         # feature_lab = ifelse(feature == "attrib3_lab", "Climate aid to give\nto this country\n(CHF) per year", feature_lab),
+         # feature_lab = ifelse(feature == "attrib4_lab", "Value of Swiss\ntrade with this\ncountry", feature_lab),
+         # feature_lab = ifelse(feature == "attrib5_lab", "Extreme weather event", feature_lab),
+         # feature_lab = ifelse(feature == "attrib6_lab", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council", feature_lab),
+         # feature_lab = factor(feature_lab, levels = c("Recipient developing country", "Number of climate\nmigrants to accept\nfrom this country per year",
+         #                                              "Climate aid to give\nto this country\n(CHF) per year", "Value of Swiss\ntrade with this\ncountry",
+         #                                              "Extreme weather event", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council"))
+  ) %>% 
+  ggplot(aes(level, estimate)) + 
+  geom_pointrange(aes(ymin = lower, ymax = upper)) +
+  scale_x_discrete(limits=rev) +
+  facet_grid(feature~., scales = "free_y", space = "free_y") +
+  theme_light() + 
+  coord_flip() +
+  labs(y ="AMCE", x = "", subtitle = "only NIMBY control") +
+  theme(panel.grid = element_blank(),
+        strip.text.y = element_text(angle = 0),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(colour = "black", size =9)) +
+  geom_hline(yintercept = 0, lty = 2, alpha = 0.7, color = "gray50") 
 
-# (2) driving
-dat$driver[dat$QID519 == "Ja, eins" | dat$QID519== "Ja, mehere"] <- 1
-dat$driver[dat$QID519 == "Nein"] <- 0
-table(dat$driver)
-dat$ren_driver <- ifelse(grepl("Strom|Erdgas|Biotreibstoffe", dat$QID535) & !is.na(dat$QID535), 1, 0)
+ggsave(p_baseline, file = "plots/p_baseline.pdf", width = 7, height = 7)
 
-dat$vege <- ifelse(dat$QID582 == "Ja", 0, 1)
+mm_by <- cj(dat, choice ~ attrib1_lab + attrib2_lab + attrib3_lab + attrib4_lab + attrib5_lab + attrib6_lab + attrib7_lab, id = ~id, estimate = "amce", by = ~NIMBY)
 
-# (8) co2 law beliefs
-# is forced choice
-transform <- function(x){
-  unlist(lapply(x, function(x)
-    if (is.na(x)) {NA} 
-    else if (x == "Voll und ganz") {5}
-    else if (x == "Eher") {4}
-    else if (x == "Weder noch") {3}
-    else if (x == "Eher nicht") {2}
-    else if (x == "Ganz und gar nicht") {1}
-  )
-  )
-}
-
-dat$co2_law_effect <- transform(dat$QID82_1)
-dat$co2_law_effic <- transform(dat$QID82_2)
-dat$co2_law_compet <- transform(dat$QID82_3)
-dat$co2_law_just <- transform(dat$QID82_4)
-dat$co2_law_transf <- transform(dat$QID82_5)
-table(dat$co2_law_transf, useNA = "always") 
-
-
-
-## (9) salience, # no 0_2:0_4 not in excel file
-# top
-dat$top_sal_ahv <- ifelse(dat$QID432_0_1_RANK == "1.0" & !is.na(dat$QID432_0_1_RANK), 1, 0) # Altersvorsorge/AHV
-dat$top_sal_unemp <- ifelse(dat$QID432_0_5_RANK == "1.0" & !is.na(dat$QID432_0_5_RANK), 1, 0) # Arbeitslosigkeit
-dat$top_sal_refug <- ifelse(dat$QID432_0_6_RANK == "1.0" & !is.na(dat$QID432_0_6_RANK), 1, 0) # Flüchtlinge
-dat$top_sal_eu <- ifelse(dat$QID432_0_7_RANK == "1.0" & !is.na(dat$QID432_0_7_RANK), 1, 0) # Verhältnis der Schweiz zur Europäischen Union
-dat$top_sal_health <- ifelse(dat$QID432_0_8_RANK == "1.0" & !is.na(dat$QID432_0_8_RANK), 1, 0) # Gesundheitswesen / Krankenversicherung
-dat$top_sal_energy <- ifelse(dat$QID432_0_9_RANK == "1.0" & !is.na(dat$QID432_0_9_RANK), 1, 0) # Energieversorgung
-dat$top_sal_traff <- ifelse(dat$QID432_0_10_RANK == "1.0" & !is.na(dat$QID432_0_10_RANK), 1, 0) # Verkehr
-dat$top_sal_glob <- ifelse(dat$QID432_0_11_RANK == "1.0" & !is.na(dat$QID432_0_11_RANK), 1, 0) # Globalisierung der Wirtschaft / Freihandel
-dat$top_sal_env <- ifelse(dat$QID432_0_12_RANK == "1.0" & !is.na(dat$QID432_0_12_RANK), 1, 0) # Umweltschutz / Klimawandel
-dat$top_sal_crim <- ifelse(dat$QID432_0_13_RANK == "1.0" & !is.na(dat$QID432_0_13_RANK), 1, 0) # Kriminalität
-dat$top_sal_uneq <- ifelse(dat$QID432_0_14_RANK == "1.0" & !is.na(dat$QID432_0_14_RANK), 1, 0) # Ungleichheit bei Einkommen und Vermögen
-dat$top_sal_cult <- ifelse(dat$QID432_0_15_RANK == "1.0" & !is.na(dat$QID432_0_15_RANK), 1, 0) # Zusammenleben von Menschen unterschiedlicher Kulturen und Religionen
-dat$top_sal_for <- ifelse(dat$QID432_0_16_RANK == "1.0" & !is.na(dat$QID432_0_16_RANK), 1, 0) # Ausländische Arbeitskräfte in der Schweiz
-dat$top_sal_pop <- ifelse(dat$QID432_0_17_RANK == "1.0" & !is.na(dat$QID432_0_17_RANK), 1, 0) # Zunahme der Schweizer Wohnbevölkerung / Zersiedelung / Verstädterung
-table(dat$top_sal_pop, useNA = "always") 
-
-# any of three
-dat$sal_ahv <- ifelse(is.na(dat$QID432_0_1_RANK), 0, 1)
-dat$sal_unemp <- ifelse(is.na(dat$QID432_0_5_RANK), 0, 1)
-dat$sal_refug <- ifelse(is.na(dat$QID432_0_6_RANK), 0, 1)
-dat$sal_eu <- ifelse(is.na(dat$QID432_0_7_RANK), 0, 1)
-dat$sal_health <- ifelse(is.na(dat$QID432_0_8_RANK), 0, 1)
-dat$sal_energy <- ifelse(is.na(dat$QID432_0_9_RANK), 0, 1)
-dat$sal_traff <- ifelse(is.na(dat$QID432_0_10_RANK), 0, 1) 
-dat$sal_glob <- ifelse(is.na(dat$QID432_0_11_RANK), 0, 1)
-dat$sal_env <- ifelse(is.na(dat$QID432_0_12_RANK), 0, 1)
-dat$sal_crim <- ifelse(is.na(dat$QID432_0_13_RANK), 0, 1)
-dat$sal_uneq <- ifelse(is.na(dat$QID432_0_14_RANK), 0, 1)
-dat$sal_cult <- ifelse(is.na(dat$QID432_0_15_RANK), 0, 1)
-dat$sal_for <- ifelse(is.na(dat$QID432_0_16_RANK), 0, 1)
-dat$sal_pop <- ifelse(is.na(dat$QID432_0_17_RANK), 0, 1)
-table(dat$sal_pop, useNA = "always") 
-
-transform <- function(x){
-  unlist(lapply(x, function(x)
-    if (is.na(x)) {NA} 
-    else if (x == "Unterstütze voll und ganz") {5}
-    else if (x == "Unterstütze eher") {4}
-    else if (x == "Weder noch") {3}
-    else if (x == "Lehne eher ab") {2}
-    else if (x == "Lehne voll und ganz ab") {1}
-  )
-  )
-}
-# (10) swiss climate policy beliefs
-dat$swiss_pol_comp <- transform(dat$QID76_1)
-dat$swiss_pol_effect <- transform(dat$QID76_2)
-dat$swiss_pol_effic <-transform( dat$QID76_3)
-dat$swiss_pol_just <- transform(dat$QID76_4)
-dat$swiss_pol_lead <- transform(dat$QID76_5)
-dat$swiss_pol_vol <- transform(dat$QID76_6)
-dat$swiss_pol_subs <- transform(dat$QID76_7) 
-dat$swiss_pol_tax <- transform(dat$QID76_8)
-dat$swiss_pol_regu <- transform(dat$QID76_9)
-dat$swiss_pol_tech <- transform(dat$QID76_10)
-dat$swiss_pol_beha <- transform(dat$QID76_11)
-dat$swiss_pol_comb <- transform(dat$QID76_12)
-dat$swiss_pol_fed <- transform(dat$QID76_13)
-table(dat$swiss_pol_fed, useNA = "always") 
-
-## demographics
-# (10) demos: education
-dat$educ[dat$QID16 == "Keine Ausbildung abgeschlossen" | 
-         dat$QID16 == "Ich bin noch in der obligatorischen Schule" |
-         dat$QID16 == "Obligatorische Schule" |
-         dat$QID16 == "Übergangsausbildung (z.B. Anlehre, 10. Schuljahr, Haushaltsjahr, Sprachschule mit Zertifikat)"] <- 0
-dat$educ[dat$QID16 == "Berufslehre, BMS, Vollzeitberufsschule (Handelsmittelschule/Lehrwerkstätte)" | 
-           dat$QID16 == "Berufsmaturität" |
-           dat$QID16 == "Diplommittelschule, allgemein bild. Schule ohne Maturität (Verkehrsschule)" |
-           dat$QID16 == "Maturitätsschule, Lehrkräfte-Seminar (vorbereitende Ausbildung für Lehrkräfte von Kindergarten, Primarschule, Handarbeit, Hauswirtschaft)"] <- 1
-dat$educ[dat$QID16 == "Höhere Berufsausbildung mit Meisterdiplom, Eidg. Fachausweis" | 
-           dat$QID16 == "Techniker- oder Fachschule (2 Jahre Voll- oder 3 Jahre Teilzeit)" |
-           dat$QID16 == "Höhere Fachschule/Fachhochschule, HTL, HMV (3 Jahre Voll- oder 4 Jahre Teilzeit)" |
-           dat$QID16 == "Universität, ETH, Fachhochschule, Pädagogische Hochschule"] <- 2
-table(dat$educ, useNA = "always") # Weiss nicht / keine Antwort --> NA
-# dat$educ <- ifelse(is.na(dat$educ), median(dat$educ), dat$educ)
-
-# (11) demos: employment condition
-dat$empl_cond <- 0 # 
-dat$empl_cond[grepl("Teilzeit arbeitstätig (21-34.9 Std. pro Woche)", dat$QID19) == T | 
-                grepl("Teilzeit arbeitstätig (9-20.9 Std. pro Woche)", dat$QID19) == T |
-                grepl("Teilzeit arbeitstätig (1-8.9 Std. pro Woche)", dat$QID19) == T ] <- 1
-dat$empl_cond[grepl("Vollzeit arbeitstätig (35 Std. und mehr pro Woche)", dat$QID19) == T ] <- 2
-table(dat$empl_cond, useNA = "always") # Weiss nicht / keine Antwort --> NA
-
-# (11) demos: employment sect 
-dat$empl_sect <- 0 # includes all those with "Weiss nicht / keine Antwort" and all those those that do not work
-dat$empl_sect[dat$QID20 == "Primärer Sektor, u.a. Landwirtschaft, Forstwirtschaft"] <- 1
-dat$empl_sect[dat$QID20 == "Sekundärer Sektor, u.a. Industrie, Gewerbe, Handwerk"] <- 2
-dat$empl_sect[dat$QID20 == "Tertiärer Sektor, u.a. Dienstleistungen, Verwaltungen"] <- 3
-table(dat$empl_sect, useNA = "always") # Weiss nicht / keine Antwort --> NA
-
-# (12) demos: financial conditions
-dat$fin_cond[dat$QID21 == "Ja"] <- 3
-dat$fin_cond[dat$QID21 == "Es geht so"] <- 2
-dat$fin_cond[dat$QID21 == "Nein"] <- 1
-dat$fin_cond[dat$QID21 == "Weiss nicht / keine Antwort"] <- 0
-table(dat$fin_cond, useNA = "always") # Weiss nicht / keine Antwort --> NA
-
-dat$age[dat$QID2 == "18 bis 24 Jahre"] <- 1
-dat$age[dat$QID2 == "25 bis 34 Jahre"] <- 2
-dat$age[dat$QID2 == "35 bis 44 Jahre"] <- 3
-dat$age[dat$QID2 == "45 bis 54 Jahre"] <- 4
-dat$age[dat$QID2 == "55 bis 64 Jahre"] <- 5
-dat$age[dat$QID2 == "65 bis 74 Jahre"] <- 6
-dat$age[dat$QID2 == "75+ Jahre"] <- 7
-
-# gender
-dat$gender[dat$QID3 == "Mann"] <- 1
-dat$gender[dat$QID3 == "Frau"] <- 0
-
-# language
-unique(dat$Q_Language)
-dat$language[dat$Q_Language == "FR"] <- 1
-dat$language[dat$Q_Language == "DE"] <- 0
-
-# (13) demos: left-right
-sum(is.na(dat$QID27_1))/sum(!is.na(dat$QID27_1)) # 12% NA, keine Antwort 
-dat$left_right <- as.numeric(dat$QID27_1)
-
-# demos not included: civil status (QID17), political party preference (QID28) has less NAs than left-right
-
-# recode number of stations
-dat$no_of_stations_ev_1 <- factor(ifelse(dat$no_of_stations_ev >=1, 1, 0))
-dat$no_of_stations_ev_2 <- factor(ifelse(dat$no_of_stations_ev >=2, 1, 0))
-dat$no_of_stations_ev_3 <- factor(ifelse(dat$no_of_stations_ev >=3, 1, 0))
-dat$no_of_stations_ev_4 <- factor(ifelse(dat$no_of_stations_ev >=4, 1, 0))
-dat$no_of_stations_ev_5 <- factor(ifelse(dat$no_of_stations_ev >=5, 1, 0))
-
-dat$ratio_ev_to_muni_area <- as.numeric(dat$ratio_ev_to_muni_area)
-
-unique(dat$QID4)
-dat$region[dat$QID4 %in% c("Waadt", "Genf", "Valais (francophone)", "Wallis (deutschsprachig)")] <- 1 # Genfersee Region
-dat$region[dat$QID4 %in% c("Berne (francophone)", "Bern (deutschsprachig)", "Solothurn", "Neuchâtel", "Jura", "Fribourg (francophone)", "Freiburg (deutschsprachig)")] <- 2 # Mittelland
-dat$region[dat$QID4 %in% c("Aargau", "Basel-Landschaft", "Basel-Stadt")] <- 3 # Nordwestschweiz
-dat$region[dat$QID4 %in% c("Zürich")] <- 4 # Zürich 
-dat$region[dat$QID4 %in% c("St. Gallen", "Thurgau", "Schaffhausen", "Graubünden/Grischun (deutsch/rätoromanisch)", "Appenzell-Ausserrhoden", "Appenzell-Innerrhoden" )] <- 5 # Ostschweiz
-dat$region[dat$QID4 %in% c("Schwyz", "Luzern", "Zug", "Glarus", "Nidwalden", "Obwalden", "Uri")] <- 6 # Zentralschweiz
-dat$region[dat$QID4 %in% c("Tessin")] <- 7 # Tessin
-table(dat$region, useNA = "always")
-
-library(sf)
-rural_urban <- read_csv("geoDaten/plz_merged_raumtypo/plz_raumtypo.csv")
-rural_urban <- rural_urban[!duplicated(rural_urban$plz),]
-table(rural_urban$Kategorien, useNA = "always")
-
-nrow(dat)  
-dat <- left_join(dat, rural_urban, by = c("plz"))
-nrow(dat)
-
-dat$urban_rural[grepl("1", dat$Kategorien)] <- 1
-dat$urban_rural[grepl("2", dat$Kategorien)] <- 2
-dat$urban_rural[grepl("3", dat$Kategorien)] <- 3
-table(dat$urban_rural, useNA = "always")
-unique(dat$plz[is.na(dat$urban_rural)])
-
-unique(dat$plz[!is.na(dat$urban_rural) & is.na(dat$ratio_ev_to_muni_area)])
-unique(dat$plz[!is.na(dat$urban_rural) & is.na(dat$ratio_ev_to_muni_area)])
+p_NIMBY <- mm_by %>% 
+  mutate(by = factor(BY, levels = c("0", "1")),
+         # feature_lab = "",
+         # feature_lab = ifelse(feature == "attrib1_lab", "Recipient developing country", feature_lab),
+         # feature_lab = ifelse(feature == "attrib2_lab", "Number of climate\nmigrants to accept\nfrom this country per year", feature_lab),
+         # feature_lab = ifelse(feature == "attrib3_lab", "Climate aid to give\nto this country\n(CHF) per year", feature_lab),
+         # feature_lab = ifelse(feature == "attrib4_lab", "Value of Swiss\ntrade with this\ncountry", feature_lab),
+         # feature_lab = ifelse(feature == "attrib5_lab", "Extreme weather event", feature_lab),
+         # feature_lab = ifelse(feature == "attrib6_lab", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council", feature_lab),
+         # feature_lab = factor(feature_lab, levels = c("Recipient developing country", "Number of climate\nmigrants to accept\nfrom this country per year",
+         #                                              "Climate aid to give\nto this country\n(CHF) per year", "Value of Swiss\ntrade with this\ncountry",
+         #                                              "Extreme weather event", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council"))
+  ) %>% 
+  ggplot(aes(level, estimate, shape = by, col = by)) + 
+  geom_pointrange(aes(ymin = lower, ymax = upper), position = position_dodge(.5)) +
+  scale_x_discrete(limits=rev) +
+  facet_grid(feature~ ., scales = "free_y", 
+             space = "free_y"
+  ) +
+  theme_light() + 
+  coord_flip() +
+  scale_colour_npg() +
+  labs(y ="AMCE", x = "", subtitle = "Interaction with NIMBY treatment") +
+  theme(panel.grid = element_blank(),
+        legend.position = "bottom",
+        strip.text.y = element_text(angle = 0),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(colour = "black", size =9)) +
+  geom_hline(yintercept = 0, lty = 2, alpha = 0.7, color = "gray50") 
+ggsave(p_NIMBY, file = "plots/p_NIMBY.pdf", width = 7, height = 7)
 
 
-vars_to_transform2 <- c("prior_benefit_2", "sal_env", "sal_glob", "driver", "ren_driver", "educ", "fin_cond", "age",
-                       "home_owner", "empl_sect")
+dat <- dat %>% 
+  mutate(circle1 = factor(circle1, levels = c(0,1)),
+         circle2 = factor(circle2, levels = c(0,1)),
+         circle3 = factor(circle3, levels = c(0,1)),
+         circle = factor(circle, levels = c(0,1)))
+mm_by <- cj(dat, rate_binary ~ attrib1_lab + attrib2_lab + attrib3_lab + attrib4_lab + attrib5_lab + attrib6_lab + attrib7_lab, id = ~id, estimate = "amce", by = ~circle)
 
-# need to be factors for conjoint
-dat[vars_to_transform2] <- lapply(dat[vars_to_transform2], factor)
-
-
-dat_desc <- dat %>% 
-  dplyr::select(rate, choice, prior_benefit_2, ratio_ev_to_muni_area, driver, home_owner, age, educ, language, empl_sect, fin_cond, 
-                left_right, sal_glob, sal_env, region, urban_rural) %>% 
-  mutate("Region: Geneva" = ifelse(region == 1, 1, 0), 
-         "Region: Middle Land" = ifelse(region == 2, 1, 0),
-         "Region: North East" = ifelse(region == 3, 1, 0),
-         "Region: Zurich" = ifelse(region == 4, 1, 0),
-         "Region: East" = ifelse(region == 5, 1, 0),
-         "Region: Central" = ifelse(region == 6, 1, 0),
-         "Region: Ticino" = ifelse(region == 7, 1, 0),
-         "Urban Area" = ifelse(urban_rural == 1, 1, 0),
-         "Intermediate Area" = ifelse(urban_rural == 2, 1, 0),
-         "Rural Area" = ifelse(urban_rural == 3, 1, 0),) %>% 
-  dplyr::select(-region, -urban_rural) %>% 
-  mutate_all(as.character) %>% 
-  mutate_all(as.numeric) 
-
-p_desc <- dat_desc %>% 
-  mutate(ratio_ev_to_muni_area = round(ratio_ev_to_muni_area, 0)) %>% 
-  pivot_longer(., everything(), names_to = "Question", values_to = "Response") %>% 
-  mutate(Question = factor(Question, levels = c("rate", "choice", "prior_benefit_2", "ratio_ev_to_muni_area", "driver", "home_owner", "age",
-                                                "educ", "language", "empl_sect", "fin_cond", 
-                                                "left_right", "sal_glob", "sal_env",
-                                                "Region: Geneva",
-                                                "Region: Middle Land",
-                                                "Region: North East",
-                                                "Region: Zurich",
-                                                "Region: East",
-                                                "Region: Central",
-                                                "Region: Ticino",
-                                                "Urban Area",
-                                                "Intermediate Area",
-                                                "Rural Area"))) %>% 
-  group_by(Question, Response) %>% 
-  count(name = "freq") %>% 
-  mutate(Response = factor(Response, levels = as.character(c(0:14, NA)))) %>% 
-  ggplot(aes(x = Response, y = freq)) +
-  geom_col() + labs(x = "", y = "") +
-  facet_wrap(~Question, scales = "free_x", 
-             labeller = labeller(Question = c("driver" = "Driver",
-                                              "educ" = "Education",
-                                              "age" = "Age",
-                                              "empl_sect" = "Employment Sector",
-                                              "fin_cond" = "Financial Condition",
-                                              "home_owner" = "Home Owner",
-                                              "left_right" = "Left−Right",
-                                              "prior_benefit_2" = "Perceived Effectiveness\n of Prior Benefits",
-                                              "rate" = "Support \n(Rate Outcome)",
-                                              "choice" = "Support \n(Choice Outcome)",
-                                              "ratio_ev_to_muni_area" = "EV Charging Stations",
-                                              "sal_env" = "Salience: \nEnvironment and Climate",
-                                              "sal_glob" = "Salience: \nGlobalisation",
-                                              "language" = "French",
-                                              "Urban Area" = "Urban Area",
-                                              "Intermediate Area" = "Intermediate Area",
-                                              "Rural Area"  = "Rural Area",
-                                              "Region: Geneva" = "Region: Geneva",
-                                              "Region: Middle Land" = "Region: Middle Land",
-                                              "Region: North East" = "Region: North East",
-                                              "Region: Zurich" = "Region: Zurich",
-                                              "Region: East" = "Region: East",
-                                              "Region: Central" = "Region: Central",
-                                              "Region: Ticino" = "Region: Ticino"))) +
-  theme_light()
-p_desc
-ggsave(p_desc, filename = "Plots/p_desc.pdf", height = 16, width = 10)
+p_environment_score <- mm_by %>% 
+  mutate(by = factor(BY, levels = c("0", "1")),
+         # feature_lab = "",
+         # feature_lab = ifelse(feature == "attrib1_lab", "Recipient developing country", feature_lab),
+         # feature_lab = ifelse(feature == "attrib2_lab", "Number of climate\nmigrants to accept\nfrom this country per year", feature_lab),
+         # feature_lab = ifelse(feature == "attrib3_lab", "Climate aid to give\nto this country\n(CHF) per year", feature_lab),
+         # feature_lab = ifelse(feature == "attrib4_lab", "Value of Swiss\ntrade with this\ncountry", feature_lab),
+         # feature_lab = ifelse(feature == "attrib5_lab", "Extreme weather event", feature_lab),
+         # feature_lab = ifelse(feature == "attrib6_lab", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council", feature_lab),
+         # feature_lab = factor(feature_lab, levels = c("Recipient developing country", "Number of climate\nmigrants to accept\nfrom this country per year",
+         #                                              "Climate aid to give\nto this country\n(CHF) per year", "Value of Swiss\ntrade with this\ncountry",
+         #                                              "Extreme weather event", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council"))
+  ) %>% 
+  ggplot(aes(level, estimate, shape = by, col = by)) + 
+  geom_pointrange(aes(ymin = lower, ymax = upper), position = position_dodge(.5)) +
+  scale_x_discrete(limits=rev) +
+  facet_grid(feature~ ., scales = "free_y", 
+             space = "free_y"
+  ) +
+  theme_light() + 
+  coord_flip() +
+  scale_colour_npg() +
+  labs(y ="AMCE", x = "", subtitle = "Interaction with environment_score") +
+  theme(panel.grid = element_blank(),
+        legend.position = "bottom",
+        strip.text.y = element_text(angle = 0),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(colour = "black", size =9)) +
+  geom_hline(yintercept = 0, lty = 2, alpha = 0.7, color = "gray50") 
+ggsave(p_environment_score, file = "plots/p_environment_score.pdf", width = 7, height = 7)
 
 
-labs_desc <- c("Support (Rate Outcome)", "Support (Choice Outcome)", "Perceived Effectiveness of Prior Benefits",
-               "EV Charging Stations",  "Driver", "Home Owner", "Age", "Education", "French",
-               "Employment Sector", "Financial Condition", "Left-Right", "Salience: Globalisation", "Salience: Environment and Climate",
-               "Region: Geneva", "Region: Middle Land", "Region: North East", "Region: Zurich", "Region: East", "Region: Central", "Region: Ticino", "Urban Area", "Intermediate Area", "Rural Area")
+mm_by <- cj(dat, choice ~ attrib1_lab + attrib2_lab + attrib3_lab + attrib4_lab + attrib5_lab + attrib6_lab + attrib7_lab, id = ~id, estimate = "amce", by = ~left_right_bins)
 
-library(stargazer)
-stargazer(dat_desc,
-          out.header = F,
-          no.space = TRUE, 
-          label = "tab:summary_stats",
-          column.sep.width = "3pt",
-          font.size = "footnotesize",
-          covariate.labels = labs_desc,
-          out = "Tables/summary_stats.tex"
-          )
+p_left_right_bins <- mm_by %>% 
+  mutate(by = factor(BY, levels = c("Left", "Centre", "Right")),
+         # feature_lab = "",
+         # feature_lab = ifelse(feature == "attrib1_lab", "Recipient developing country", feature_lab),
+         # feature_lab = ifelse(feature == "attrib2_lab", "Number of climate\nmigrants to accept\nfrom this country per year", feature_lab),
+         # feature_lab = ifelse(feature == "attrib3_lab", "Climate aid to give\nto this country\n(CHF) per year", feature_lab),
+         # feature_lab = ifelse(feature == "attrib4_lab", "Value of Swiss\ntrade with this\ncountry", feature_lab),
+         # feature_lab = ifelse(feature == "attrib5_lab", "Extreme weather event", feature_lab),
+         # feature_lab = ifelse(feature == "attrib6_lab", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council", feature_lab),
+         # feature_lab = factor(feature_lab, levels = c("Recipient developing country", "Number of climate\nmigrants to accept\nfrom this country per year",
+         #                                              "Climate aid to give\nto this country\n(CHF) per year", "Value of Swiss\ntrade with this\ncountry",
+         #                                              "Extreme weather event", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council"))
+  ) %>% 
+  ggplot(aes(level, estimate, shape = by, col = by)) + 
+  geom_pointrange(aes(ymin = lower, ymax = upper), position = position_dodge(.5)) +
+  scale_x_discrete(limits=rev) +
+  facet_grid(feature~ ., scales = "free_y", 
+             space = "free_y"
+  ) +
+  theme_light() + 
+  coord_flip() +
+  scale_colour_npg() +
+  labs(y ="AMCE", x = "", subtitle = "Interaction with left-right") +
+  theme(panel.grid = element_blank(),
+        legend.position = "bottom",
+        strip.text.y = element_text(angle = 0),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(colour = "black", size =9)) +
+  geom_hline(yintercept = 0, lty = 2, alpha = 0.7, color = "gray50") 
+ggsave(p_left_right_bins, file = "plots/p_left_right_bins.pdf", width = 7, height = 7)
 
-library(Hmisc)
-correlation_matrix <- cor(dat_desc %>% mutate_all(., as.numeric), use = "pairwise.complete.obs")
-correlation_matrix <- round(correlation_matrix, 2)
-correlation_matrix[upper.tri(correlation_matrix)] <- NA
-diag(correlation_matrix) <- NA
-colnames(correlation_matrix) <- rownames(correlation_matrix) <- labs_desc
-correlation_matrix1 <- correlation_matrix[,1:12]
-correlation_matrix2 <- correlation_matrix[,13:ncol(correlation_matrix)]
+dat <- dat %>% 
+  mutate(left_right_binary = ifelse(left_right >= 5, "Right", "Left")) %>% 
+  mutate(left_right_binary = factor(left_right_binary, levels = c("Right", "Left")))
 
-stargazer(correlation_matrix1, title="Correlation Matrix Part 1", 
-          float.env = "sidewaystable", 
-          type = "latex", 
-          out.header = F,
-          no.space = TRUE, # to remove the spaces after each line of coefficients
-          column.sep.width = "1pt", # to reduce column width
-          font.size = "footnotesize", # to make font size smaller
-          label = "tab:correlation_pt1",
-          out = "Tables/correlation_pt1.tex"
-          # covariate.labels = labs_desc,
-          # dep.var.labels = labs_desc
-)
-stargazer(correlation_matrix2, title="Correlation Matrix  Part 2", 
-          float.env = "sidewaystable", 
-          type = "latex", 
-          out.header = F,
-          no.space = TRUE, # to remove the spaces after each line of coefficients
-          column.sep.width = "1pt", # to reduce column width
-          font.size = "footnotesize", # to make font size smaller
-          label = "tab:correlation_pt2",
-          out = "Tables/correlation_pt2.tex"
-)
+mm_by <- cj(dat, choice ~ attrib1_lab + attrib2_lab + attrib3_lab + attrib4_lab + attrib5_lab + attrib6_lab + attrib7_lab, id = ~id, estimate = "amce", by = ~left_right_binary)
+
+p_left_right_binary <- mm_by %>% 
+  mutate(by = factor(BY, levels = c("Left", "Right")),
+         # feature_lab = "",
+         # feature_lab = ifelse(feature == "attrib1_lab", "Recipient developing country", feature_lab),
+         # feature_lab = ifelse(feature == "attrib2_lab", "Number of climate\nmigrants to accept\nfrom this country per year", feature_lab),
+         # feature_lab = ifelse(feature == "attrib3_lab", "Climate aid to give\nto this country\n(CHF) per year", feature_lab),
+         # feature_lab = ifelse(feature == "attrib4_lab", "Value of Swiss\ntrade with this\ncountry", feature_lab),
+         # feature_lab = ifelse(feature == "attrib5_lab", "Extreme weather event", feature_lab),
+         # feature_lab = ifelse(feature == "attrib6_lab", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council", feature_lab),
+         # feature_lab = factor(feature_lab, levels = c("Recipient developing country", "Number of climate\nmigrants to accept\nfrom this country per year",
+         #                                              "Climate aid to give\nto this country\n(CHF) per year", "Value of Swiss\ntrade with this\ncountry",
+         #                                              "Extreme weather event", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council"))
+  ) %>% 
+  ggplot(aes(level, estimate, shape = by, col = by)) + 
+  geom_pointrange(aes(ymin = lower, ymax = upper), position = position_dodge(.5)) +
+  scale_x_discrete(limits=rev) +
+  facet_grid(feature~ ., scales = "free_y", 
+             space = "free_y"
+  ) +
+  theme_light() + 
+  coord_flip() +
+  scale_colour_npg() +
+  labs(y ="AMCE", x = "", subtitle = "Interaction with left-right (Right >=5)") +
+  theme(panel.grid = element_blank(),
+        legend.position = "bottom",
+        strip.text.y = element_text(angle = 0),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(colour = "black", size =9)) +
+  geom_hline(yintercept = 0, lty = 2, alpha = 0.7, color = "gray50") 
+ggsave(p_left_right_binary, file = "plots/p_left_right_binary.pdf", width = 7, height = 7)
+
+
+dat <- dat %>% 
+  mutate(urban_rural = factor(urban_rural, levels = c(1,2,3)))
+mm_by <- cj(dat, choice ~ attrib1_lab + attrib2_lab + attrib3_lab + attrib4_lab + attrib5_lab + attrib6_lab + attrib7_lab, id = ~id, estimate = "amce", by = ~urban_rural)
+
+p_urban_rural <- mm_by %>% 
+  mutate(by = factor(BY, levels = c(1, 2, 3)),
+         # feature_lab = "",
+         # feature_lab = ifelse(feature == "attrib1_lab", "Recipient developing country", feature_lab),
+         # feature_lab = ifelse(feature == "attrib2_lab", "Number of climate\nmigrants to accept\nfrom this country per year", feature_lab),
+         # feature_lab = ifelse(feature == "attrib3_lab", "Climate aid to give\nto this country\n(CHF) per year", feature_lab),
+         # feature_lab = ifelse(feature == "attrib4_lab", "Value of Swiss\ntrade with this\ncountry", feature_lab),
+         # feature_lab = ifelse(feature == "attrib5_lab", "Extreme weather event", feature_lab),
+         # feature_lab = ifelse(feature == "attrib6_lab", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council", feature_lab),
+         # feature_lab = factor(feature_lab, levels = c("Recipient developing country", "Number of climate\nmigrants to accept\nfrom this country per year",
+         #                                              "Climate aid to give\nto this country\n(CHF) per year", "Value of Swiss\ntrade with this\ncountry",
+         #                                              "Extreme weather event", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council"))
+  ) %>% 
+  ggplot(aes(level, estimate, shape = by, col = by)) + 
+  geom_pointrange(aes(ymin = lower, ymax = upper), position = position_dodge(.5)) +
+  scale_x_discrete(limits=rev) +
+  facet_grid(feature~ ., scales = "free_y", 
+             space = "free_y"
+  ) +
+  theme_light() + 
+  coord_flip() +
+  scale_colour_npg() +
+  labs(y ="AMCE", x = "", subtitle = "Interaction with urban_rural") +
+  theme(panel.grid = element_blank(),
+        legend.position = "bottom",
+        strip.text.y = element_text(angle = 0),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(colour = "black", size =9)) +
+  geom_hline(yintercept = 0, lty = 2, alpha = 0.7, color = "gray50") 
+ggsave(p_urban_rural, file = "plots/p_urban_rural.pdf", width = 7, height = 7)
+
+## (3) linear regression
+library(sandwich)
+model1 <- lm(choice ~ attrib1_lab + attrib2_lab +  attrib3_lab +  attrib4_lab + attrib5_lab + attrib6_lab + attrib7_lab, data = dat %>% filter(NIMBY == 0))
+summary(model1)
+model2 <- lm(choice ~ attrib1_lab*NIMBY + attrib2_lab*NIMBY +  attrib3_lab*NIMBY +  attrib4_lab*NIMBY + attrib5_lab*NIMBY + attrib6_lab*NIMBY + attrib7_lab*NIMBY, data = dat)
+summary(model2)
+
+model1_r <- coeftest(model1, cluster = reg_dat$id,  vcov = vcovHC(model1, type="HC1"))
+model2_r <- coeftest(model2, cluster = reg_dat$id,  vcov = vcovHC(model2, type="HC1"))
+
+model1_r %>% 
+  as.data.frame() %>% 
+  rownames_to_column() %>% 
+  mutate(attrib = gsub("_lab", "", ))
+  
+
+
+texreg::texreg(list(model1.1_r, model1.2_r, model1.3_r, model1.4_r, model1.5_r), digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
+               fontsize = "tiny", longtable = T, no.margin = T,
+               omit.coef = "region",
+               custom.coef.names = c("Intercept",
+                                     # Experimental
+                                     "50$\\%$", "60$\\%$", "70$\\%$", "80$\\%$",
+                                     "0.14 Fr./l petrol", "0.28 Fr./l petrol", "0.42 Fr./l petrol", "0.56 Fr./l petrol",
+                                     "0.16 Fr./l heating oil", "0.31 Fr./l heating oil", "0.47 Fr./l heating oil", "0.63 Fr./l heating oil",
+                                     "0.77 Fr./kg meat", "1.53 Fr./kg meat", "2.30 Fr./kg meat", "3.07 Fr./kg meat",
+                                     "10 Fr. for short- and 30 Fr. for long-distance", "25 Fr. for short- and 75 Fr. for long-distance", "40 Fr. for short- and 120 Fr. for long-distance", "55 Fr. for short- and 165 Fr. for long-distance",
+                                     "Mostly reimbursement", "Reimbursement und climate protection", "Mostly climate protection", "Exclusively climate protection",
+                                     # EVs
+                                     "Perceived Effectiveness of Prior Benefits", "EV Charging Stations", 
+                                     # CTRLs
+                                     "Driver", "Home Owner", "Age", "Education", "French", "Primary Employment Sector", "Secondary Employment Sector", "Tertiary Employment Sector", "Financial Condition", "Left-Right",
+                                     "Salience: Globalisation", "Salience: Environment and Climate",
+                                     "Intermediate Area", "Rural Area"
+               ),
+               groups = list("Experimental: Reduction Target" = 2:5, "Experimental: Tax Road Transport" = 6:9, "Experimental: Tax Housing" = 10:13,
+                             "Experimental: Tax Food" = 14:17, "Experimental: Tax Aviation Transport" = 18:21, "Experimental: Revenue Use" = 22:25,
+                             "Explanatory Variables" = 26:27, "Controls" = 28:41
+               ),
+               custom.gof.rows = list("Region Controls" = c("No", "No", "No", "Yes", "Yes"),
+                                      "Observations" = lapply(list(model1.1, model1.2, model1.3, model1.4, model1.5), nobs),
+                                      "R^2" = unlist(sapply(lapply(list(model1.1, model1.2, model1.3, model1.4, model1.5), summary), "[", 8)),
+                                      "Adj. R^2" = unlist(sapply(lapply(list(model1.1, model1.2, model1.3, model1.4, model1.5), summary), "[", 9))),
+               include.deviance = F,
+               label = "table:linear_direct_exp_factor", 
+               file = "Tables/linear_direct_exp_factor.tex",
+               use.packages = F,
+               caption = "Ordinary least squares model with direct effects using the rate outcome. Conjoint attributes are operationalised as ordered factor levels. Normalisation: continuous variables are normalised by two times 
+               the standard error to make them comparable to the estimates of binary variables following Gelman (2007). Standard errors are cluster robust by respondent id.")
 
 
 # ######################################################
