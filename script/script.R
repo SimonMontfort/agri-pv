@@ -41,6 +41,7 @@ library(sparsereg)
 library(tibble)
 library(ggpubr)
 library(emmeans)
+library(stringi)
 emm_options(rg.limit = 5.67e+15)
 
 setwd("/Users/simon/Documents/repo/agri-pv")
@@ -691,7 +692,7 @@ p_NIMBY <- mm_by %>%
   theme_light() + 
   coord_flip() +
   scale_colour_npg() +
-  labs(y ="AMCE", x = "", subtitle = "Interaction with NIMBY treatment") +
+  labs(y ="MM", x = "", subtitle = "Interaction with NIMBY treatment, binary recoding of rate outcoome") +
   theme(panel.grid = element_blank(),
         legend.position = "bottom",
         strip.text.y = element_text(angle = 0),
@@ -730,7 +731,7 @@ p_environment_score <- mm_by %>%
   theme_light() + 
   coord_flip() +
   scale_colour_npg() +
-  labs(y ="AMCE", x = "", subtitle = "Interaction with environment_score") +
+  labs(y ="MM", x = "", subtitle = "Interaction with environment_score, binary recoding of rate outcoome") +
   theme(panel.grid = element_blank(),
         legend.position = "bottom",
         strip.text.y = element_text(angle = 0),
@@ -764,7 +765,7 @@ p_left_right_bins <- mm_by %>%
   theme_light() + 
   coord_flip() +
   scale_colour_npg() +
-  labs(y ="AMCE", x = "", subtitle = "Interaction with left-right") +
+  labs(y ="AMCE", x = "", subtitle = "Interaction with left-right, binary recoding of rate outcoome") +
   theme(panel.grid = element_blank(),
         legend.position = "bottom",
         strip.text.y = element_text(angle = 0),
@@ -801,7 +802,7 @@ p_left_right_binary <- mm_by %>%
   theme_light() + 
   coord_flip() +
   scale_colour_npg() +
-  labs(y ="AMCE", x = "", subtitle = "Interaction with left-right (Right >=5)") +
+  labs(y ="MM", x = "", subtitle = "Interaction with left-right (Right >=5), binary recoding of rate outcoome") +
   theme(panel.grid = element_blank(),
         legend.position = "bottom",
         strip.text.y = element_text(angle = 0),
@@ -837,7 +838,7 @@ p_urban_rural <- mm_by %>%
   theme_light() + 
   coord_flip() +
   scale_colour_npg() +
-  labs(y ="AMCE", x = "", subtitle = "Interaction with urban_rural") +
+  labs(y ="MM", x = "", subtitle = "Interaction with urban_rural, binary recoding of rate outcoome") +
   theme(panel.grid = element_blank(),
         legend.position = "bottom",
         strip.text.y = element_text(angle = 0),
