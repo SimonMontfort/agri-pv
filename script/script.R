@@ -538,7 +538,7 @@ dat <- dat %>%
 model1 <- lm(choice ~ attrib1_lab + attrib2_lab +  attrib3_lab +  attrib4_lab + attrib5_lab + attrib6_lab + attrib7_lab, data = dat %>% filter(NIMBY == 0))
 summary(model1)
 
-amce <- cj(data = dat %>% filter(NIMBY == 0), rate_binary ~ attrib1_lab + attrib2_lab + attrib3_lab + attrib4_lab + attrib5_lab + attrib6_lab + attrib7_lab, id = ~id, estimate = "amce")
+amce <- cj(data = dat, rate_binary ~ attrib1_lab + attrib2_lab + attrib3_lab + attrib4_lab + attrib5_lab + attrib6_lab + attrib7_lab, id = ~id, estimate = "amce")
 amce
 
 p_baseline <- amce %>% 
@@ -548,7 +548,46 @@ p_baseline <- amce %>%
                                      "0-500 meters", "500-1500 meters", "1500-4500 meters", 
                                      "Municipality", "Regional energy supplier", "Farmers", "Landowner", "Energy cooperative", "External investors", 
                                      "0-5% reduction in crop yield", "6-10% reduction in crop yield", "11-20% reduction in crop yield", "21-40% reduction in crop yield", "41-80% reduction in crop yield", 
-                                     "0-5% increase in own production", "6-10% increase in own production ", "11-20% increase in own production", "21-40% Erhöhung der Eigenproduktion", "41-80% Erhöhung der Eigenproduktion", 
+                                     "0-5% increase in own production", "6-10% increase in own production ", "11-20% increase in own production", "21-40% increase in own production", "41-80% increase in own production", 
+                                     "0-5% higher income", "6-10% higher income", "11-20% higher income", "21-40% higher income", "41-80% higher income"))
+    # by = factor(BY, levels = c("0", "1")),
+    # feature_lab = "",
+    # feature_lab = ifelse(feature == "attrib1_lab", "Recipient developing country", feature_lab),
+    # feature_lab = ifelse(feature == "attrib2_lab", "Number of climate\nmigrants to accept\nfrom this country per year", feature_lab),
+    # feature_lab = ifelse(feature == "attrib3_lab", "Climate aid to give\nto this country\n(CHF) per year", feature_lab),
+    # feature_lab = ifelse(feature == "attrib4_lab", "Value of Swiss\ntrade with this\ncountry", feature_lab),
+    # feature_lab = ifelse(feature == "attrib5_lab", "Extreme weather event", feature_lab),
+    # feature_lab = ifelse(feature == "attrib6_lab", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council", feature_lab),
+    # feature_lab = factor(feature_lab, levels = c("Recipient developing country", "Number of climate\nmigrants to accept\nfrom this country per year",
+    #                                              "Climate aid to give\nto this country\n(CHF) per year", "Value of Swiss\ntrade with this\ncountry",
+    #                                              "Extreme weather event", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council"))
+  ) %>% 
+  ggplot(aes(level, estimate)) + 
+  geom_pointrange(aes(ymin = lower, ymax = upper)) +
+  scale_x_discrete(limits=rev) +
+  facet_grid(feature~., scales = "free_y", space = "free_y") +
+  theme_light() + 
+  coord_flip() +
+  labs(y ="AMCE", x = "", subtitle = "all (NIMBY treated and control)") +
+  theme(panel.grid = element_blank(),
+        strip.text.y = element_text(angle = 0),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(colour = "black", size =9)) +
+  geom_hline(yintercept = 0, lty = 2, alpha = 0.7, color = "gray50") 
+
+ggsave(p_baseline, file = "plots/p_baseline.pdf", width = 7, height = 7)
+
+amce <- cj(data = dat %>% filter(NIMBY == 0), rate_binary ~ attrib1_lab + attrib2_lab + attrib3_lab + attrib4_lab + attrib5_lab + attrib6_lab + attrib7_lab, id = ~id, estimate = "amce")
+amce
+
+p_baseline_control <- amce %>% 
+  mutate(
+    level = factor(level, levels = c("Agri-PV systems on greenhouses and replacement of polytunnels", "Horizontal open space Agri-PV systems on pasture or arable land", "Vertical open space Agri-PV systems on pasture or arable land", 
+                                     "Up to one football pitch", "Up to 5 football pitches", "Up to 10 football pitches", 
+                                     "0-500 meters", "500-1500 meters", "1500-4500 meters", 
+                                     "Municipality", "Regional energy supplier", "Farmers", "Landowner", "Energy cooperative", "External investors", 
+                                     "0-5% reduction in crop yield", "6-10% reduction in crop yield", "11-20% reduction in crop yield", "21-40% reduction in crop yield", "41-80% reduction in crop yield", 
+                                     "0-5% increase in own production", "6-10% increase in own production ", "11-20% increase in own production", "21-40% increase in own production", "41-80% increase in own production", 
                                      "0-5% higher income", "6-10% higher income", "11-20% higher income", "21-40% higher income", "41-80% higher income"))
     # by = factor(BY, levels = c("0", "1")),
          # feature_lab = "",
@@ -575,7 +614,46 @@ p_baseline <- amce %>%
         strip.text = element_text(colour = "black", size =9)) +
   geom_hline(yintercept = 0, lty = 2, alpha = 0.7, color = "gray50") 
 
-ggsave(p_baseline, file = "plots/p_baseline.pdf", width = 7, height = 7)
+ggsave(p_baseline_control, file = "plots/p_baseline_control.pdf", width = 7, height = 7)
+
+amce <- cj(data = dat %>% filter(NIMBY == 1), rate_binary ~ attrib1_lab + attrib2_lab + attrib3_lab + attrib4_lab + attrib5_lab + attrib6_lab + attrib7_lab, id = ~id, estimate = "amce")
+amce
+
+p_baseline_treated <- amce %>% 
+  mutate(
+    level = factor(level, levels = c("Agri-PV systems on greenhouses and replacement of polytunnels", "Horizontal open space Agri-PV systems on pasture or arable land", "Vertical open space Agri-PV systems on pasture or arable land", 
+                                     "Up to one football pitch", "Up to 5 football pitches", "Up to 10 football pitches", 
+                                     "0-500 meters", "500-1500 meters", "1500-4500 meters", 
+                                     "Municipality", "Regional energy supplier", "Farmers", "Landowner", "Energy cooperative", "External investors", 
+                                     "0-5% reduction in crop yield", "6-10% reduction in crop yield", "11-20% reduction in crop yield", "21-40% reduction in crop yield", "41-80% reduction in crop yield", 
+                                     "0-5% increase in own production", "6-10% increase in own production ", "11-20% increase in own production", "21-40% increase in own production", "41-80% increase in own production", 
+                                     "0-5% higher income", "6-10% higher income", "11-20% higher income", "21-40% higher income", "41-80% higher income"))
+    # by = factor(BY, levels = c("0", "1")),
+    # feature_lab = "",
+    # feature_lab = ifelse(feature == "attrib1_lab", "Recipient developing country", feature_lab),
+    # feature_lab = ifelse(feature == "attrib2_lab", "Number of climate\nmigrants to accept\nfrom this country per year", feature_lab),
+    # feature_lab = ifelse(feature == "attrib3_lab", "Climate aid to give\nto this country\n(CHF) per year", feature_lab),
+    # feature_lab = ifelse(feature == "attrib4_lab", "Value of Swiss\ntrade with this\ncountry", feature_lab),
+    # feature_lab = ifelse(feature == "attrib5_lab", "Extreme weather event", feature_lab),
+    # feature_lab = ifelse(feature == "attrib6_lab", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council", feature_lab),
+    # feature_lab = factor(feature_lab, levels = c("Recipient developing country", "Number of climate\nmigrants to accept\nfrom this country per year",
+    #                                              "Climate aid to give\nto this country\n(CHF) per year", "Value of Swiss\ntrade with this\ncountry",
+    #                                              "Extreme weather event", "Percentage of this\ncountry's votes\nin line with Switzerland's\nposition at the UN\nSecurity Council"))
+  ) %>% 
+  ggplot(aes(level, estimate)) + 
+  geom_pointrange(aes(ymin = lower, ymax = upper)) +
+  scale_x_discrete(limits=rev) +
+  facet_grid(feature~., scales = "free_y", space = "free_y") +
+  theme_light() + 
+  coord_flip() +
+  labs(y ="AMCE", x = "", subtitle = "only NIMBY treated") +
+  theme(panel.grid = element_blank(),
+        strip.text.y = element_text(angle = 0),
+        strip.background = element_rect(fill = "white"),
+        strip.text = element_text(colour = "black", size =9)) +
+  geom_hline(yintercept = 0, lty = 2, alpha = 0.7, color = "gray50") 
+
+ggsave(p_baseline_treated, file = "plots/p_baseline_treated.pdf", width = 7, height = 7)
 
 export_table <- function(name, col_label, formula, by){
   require(jtools)
