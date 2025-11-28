@@ -19,9 +19,9 @@
 # nickname       Eye Holes   
 
 
-setwd("D:/Studium/Master/Arbeit/Agri-PV/Auswertung/Replication Material")
+setwd("/Users/simon/Documents/repo/agri-pv")
 
-filename <- "data/data_cleaned.csv"
+filename <- "data/data_cleaned[1].csv"
 data <- read.csv(filename, header = TRUE, sep = ",")
 
 # Packages #####################################################
@@ -49,9 +49,11 @@ stars<-c("." = 0.1,"*" =0.05,"**" =0.01, "***" =0.001)
 # Subset data #############################################
 
 #Left leaning respondents
-data_left <- data[!is.na(data$left_right) &  data$left_right < 6, ]
+data_left <- data[!is.na(data$left_right) &  data$left_right <=4, ]
+#centre leaning respondents
+data_centre <- data[!is.na(data$left_right) &  data$left_right >=5 &  data$left_right <=6, ]
 #Right leaning respondents
-data_right <- data[!is.na(data$left_right) & data$left_right > 5, ]
+data_right <- data[!is.na(data$left_right) & data$left_right >=7, ]
 
 
 # Controls ##############################################
@@ -160,32 +162,41 @@ texreg::htmlreg(lapply(models_balance_check, function(model) texreg::extract(mod
 ### No Interactions ################################
 # Knowledge Circle 1
 comp_potential_0_500_control_left <- model_control("potential_know_1", "NIMBY", controls, data_left)
+comp_potential_0_500_control_centre <- model_control("potential_know_1", "NIMBY", controls, data_centre)
 comp_potential_0_500_control_right <- model_control("potential_know_1", "NIMBY", controls, data_right)
 
 comp_potential_0_500_circle_split_0_control_left <- model_control("potential_know_1", "NIMBY", controls_gender_binary, data_left [data_left$circle1 ==0,])
+comp_potential_0_500_circle_split_0_control_centre <- model_control("potential_know_1", "NIMBY", controls_gender_binary, data_centre [data_centre$circle1 ==0,])
 comp_potential_0_500_circle_split_0_control_right <- model_control("potential_know_1", "NIMBY", controls_gender_binary, data_right [data_right$circle1 ==0,])
 
 comp_potential_0_500_circle_split_1_control_left <- model_control("potential_know_1", "NIMBY", controls_gender_binary, data_left [data_left$circle1 ==1,])
+comp_potential_0_500_circle_split_1_control_centre <- model_control("potential_know_1", "NIMBY", controls_gender_binary, data_centre [data_centre$circle1 ==1,])
 comp_potential_0_500_circle_split_1_control_right <- model_control("potential_know_1", "NIMBY", controls_gender_binary, data_right [data_right$circle1 ==1,])
 
 #Knowledge Circle 2
 comp_potential_500_1500_control_left <- model_control("potential_know_2", "NIMBY", controls, data_left)
+comp_potential_500_1500_control_centre <- model_control("potential_know_2", "NIMBY", controls, data_centre)
 comp_potential_500_1500_control_right <- model_control("potential_know_2", "NIMBY", controls, data_right)
 
 comp_potential_500_1500_circle_split_0_control_left <- model_control("potential_know_2", "NIMBY", controls_gender_binary, data_left [data_left$circle2 ==0,])
+comp_potential_500_1500_circle_split_0_control_centre <- model_control("potential_know_2", "NIMBY", controls_gender_binary, data_centre [data_left$circle2 ==0,])
 comp_potential_500_1500_circle_split_0_control_right <- model_control("potential_know_2", "NIMBY", controls_gender_binary, data_right [data_right$circle2 ==0,])
 
 comp_potential_500_1500_circle_split_1_control_left <- model_control("potential_know_2", "NIMBY", controls_gender_binary, data_left [data_left$circle2 ==1,])
+comp_potential_500_1500_circle_split_1_control_centre <- model_control("potential_know_2", "NIMBY", controls_gender_binary, data_centre [data_left$circle2 ==1,])
 comp_potential_500_1500_circle_split_1_control_right <- model_control("potential_know_2", "NIMBY", controls_gender_binary, data_right [data_right$circle2 ==1,])
 
 #Knowledge Circle 3
 comp_potential_1500_4500_control_left <- model_control("potential_know_3", "NIMBY", controls, data_left)
+comp_potential_1500_4500_control_centre <- model_control("potential_know_3", "NIMBY", controls, data_centre)
 comp_potential_1500_4500_control_right <- model_control("potential_know_3", "NIMBY", controls, data_right)
 
 comp_potential_1500_4500_circle_split_0_control_left <- model_control("potential_know_3", "NIMBY", controls_gender_binary, data_left [data_left$circle3 ==0,])
+comp_potential_1500_4500_circle_split_0_control_centre <- model_control("potential_know_3", "NIMBY", controls_gender_binary, data_centre [data_right$circle3 ==0,])
 comp_potential_1500_4500_circle_split_0_control_right <- model_control("potential_know_3", "NIMBY", controls_gender_binary, data_right [data_right$circle3 ==0,])
 
 comp_potential_1500_4500_circle_split_1_control_left <- model_control("potential_know_3", "NIMBY", controls_gender_binary, data_left [data_left$circle3 ==1,])
+comp_potential_1500_4500_circle_split_1_control_centre <- model_control("potential_know_3", "NIMBY", controls_gender_binary, data_centre [data_right$circle3 ==1,])
 comp_potential_1500_4500_circle_split_1_control_right <- model_control("potential_know_3", "NIMBY", controls_gender_binary, data_right [data_right$circle3 ==1,])
 
 
@@ -196,17 +207,20 @@ comp_potential_1500_4500_circle_split_1_control_right <- model_control("potentia
 #### Comprehension Check
 models_comp <- list(
   comp_potential_0_500_control_left,
+  comp_potential_0_500_control_centre,
   comp_potential_0_500_control_right,
   comp_potential_500_1500_control_left,
+  comp_potential_500_1500_control_centre,
   comp_potential_500_1500_control_right,
   comp_potential_1500_4500_control_left,
+  comp_potential_1500_4500_control_centre,
   comp_potential_1500_4500_control_right
 )
 
 #LaTeX
 texreg::texreg(lapply(models_comp, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("CC1, Left", "CC1, Right", "CC2, Left", "CC2, Right", "CC3, Left", "CC3, Right"),
+                custom.model.names = c("CC1, Left", "CC1, Centre", "CC1, Right", "CC2, Left", "CC2, Centre", "CC2, Right", "CC3, Left", "CC3, Centre", "CC3, Right"),
                 fontsize = "small", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -234,7 +248,7 @@ texreg::texreg(lapply(models_comp, function(model) texreg::extract(model, includ
 #html
 texreg::htmlreg(lapply(models_comp, function(model) texreg::extract(model, include.ci = FALSE)), 
                digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-               custom.model.names = c("CC1, Left", "CC1, Right", "CC2, Left", "CC2, Right", "CC3, Left", "CC3, Right"),
+               custom.model.names = c("CC1, Left", "CC1, Centre", "CC1, Right", "CC2, Left", "CC2, Centre", "CC2, Right", "CC3, Left", "CC3, Centre", "CC3, Right"),
                fontsize = "tiny", longtable = T, no.margin = T,
                custom.coef.names = c("Intercept",
                                      "NIMBY",
@@ -265,14 +279,16 @@ texreg::htmlreg(lapply(models_comp, function(model) texreg::extract(model, inclu
 
 models_comp_1 <- list(
   comp_potential_0_500_circle_split_0_control_left,
+  comp_potential_0_500_circle_split_0_control_centre,
   comp_potential_0_500_circle_split_0_control_right,
   comp_potential_0_500_circle_split_1_control_left,
+  comp_potential_0_500_circle_split_1_control_centre,
   comp_potential_0_500_circle_split_1_control_right
 )
 #Latex
 texreg::texreg(lapply(models_comp_1, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("CC1, Left, Low", "CC1, Right, Low", "CC1, Left, High", "CC1, Right, High"),
+                custom.model.names = c("CC1, Left, Low", "CC1, Centre, Low", "CC1, Right, Low", "CC1, Left, High", "CC1, Centre, High", "CC1, Right, High"),
                 fontsize = "small", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -294,7 +310,7 @@ texreg::texreg(lapply(models_comp_1, function(model) texreg::extract(model, incl
 #hmtl
 texreg::htmlreg(lapply(models_comp_1, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("CC1, Left, Low", "CC1, Right, Low", "CC1, Left, High", "CC1, Right, High"),
+                custom.model.names = c("CC1, Left, Low", "CC1, Centre, Low", "CC1, Right, Low", "CC1, Left, High", "CC1, Centre, High", "CC1, Right, High"),
                 fontsize = "tiny", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -318,14 +334,16 @@ texreg::htmlreg(lapply(models_comp_1, function(model) texreg::extract(model, inc
 #Circle 2
 models_comp_2 <- list(
   comp_potential_500_1500_circle_split_0_control_left,
+  comp_potential_500_1500_circle_split_0_control_centre,
   comp_potential_500_1500_circle_split_0_control_right,
   comp_potential_500_1500_circle_split_1_control_left,
+  comp_potential_500_1500_circle_split_1_control_centre,
   comp_potential_500_1500_circle_split_1_control_right
 )
 #Latex
 texreg::texreg(lapply(models_comp_2, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("CC2, Left, Low", "CC2, Right, Low", "CC2, Left, High", "CC2, Right, High"),
+                custom.model.names = c("CC2, Left, Low", "CC2, Centre, Low", "CC2, Right, Low", "CC2, Left, High", "CC2, Centre, High", "CC2, Right, High"),
                 fontsize = "small", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                        "NIMBY",
@@ -347,7 +365,7 @@ texreg::texreg(lapply(models_comp_2, function(model) texreg::extract(model, incl
 #Html
 texreg::htmlreg(lapply(models_comp_2, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("CC2, Left, Low", "CC2, Right, Low", "CC2, Left, High", "CC2, Right, High"),
+                custom.model.names = c("CC2, Left, Low", "CC2, Centre, Low", "CC2, Right, Low", "CC2, Left, High", "CC2, Centre, High", "CC2, Right, High"),
                 fontsize = "tiny", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -371,14 +389,16 @@ texreg::htmlreg(lapply(models_comp_2, function(model) texreg::extract(model, inc
 #Circle 3
 models_comp_3 <- list(
   comp_potential_1500_4500_circle_split_0_control_left,
+  comp_potential_1500_4500_circle_split_0_control_centre,
   comp_potential_1500_4500_circle_split_0_control_right,
   comp_potential_1500_4500_circle_split_1_control_left,
+  comp_potential_1500_4500_circle_split_1_control_centre,
   comp_potential_1500_4500_circle_split_1_control_right
 )
 #Latex
 texreg::texreg(lapply(models_comp_3, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("CC3, Left, Low", "CC3, Right, Low", "CC3, Left, High", "CC3, Right, High"),
+                custom.model.names = c("CC3, Left, Low", "CC3, Centre, Low", "CC3, Right, Low", "CC3, Left, High",  "CC3, Centre, High", "CC3, Right, High"),
                 fontsize = "small", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -401,7 +421,7 @@ texreg::texreg(lapply(models_comp_3, function(model) texreg::extract(model, incl
 #Html
 texreg::htmlreg(lapply(models_comp_3, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("CC3, Left, Low", "CC3, Right, Low", "CC3, Left, High", "CC3, Right, High"),
+                custom.model.names = c("CC3, Left, Low", "CC3, Centre, Low", "CC3, Right, Low", "CC3, Left, High",  "CC3, Centre, High", "CC3, Right, High"),
                 fontsize = "tiny", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -423,29 +443,35 @@ texreg::htmlreg(lapply(models_comp_3, function(model) texreg::extract(model, inc
 
 ### Interaction with Circles ################################
 dep_potential_know_1_control_int_circles_left <- model_control("potential_know_1", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_left)
+dep_potential_know_1_control_int_circles_centre <- model_control("potential_know_1", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_centre)
 dep_potential_know_1_control_int_circles_right <- model_control("potential_know_1", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_right)
 
 dep_potential_know_2_control_int_circles_left <- model_control("potential_know_2", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_left)
+dep_potential_know_2_control_int_circles_centre <- model_control("potential_know_2", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_centre)
 dep_potential_know_2_control_int_circles_right <- model_control("potential_know_2", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_right)
 
 dep_potential_know_3_control_int_circles_left <- model_control("potential_know_3", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_left)
+dep_potential_know_3_control_int_circles_centre <- model_control("potential_know_3", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_centre)
 dep_potential_know_3_control_int_circles_right <- model_control("potential_know_3", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_right)
 
 
 #### SI Table 14 ######################################
 models_comp_int <- list(
   dep_potential_know_1_control_int_circles_left ,
+  dep_potential_know_1_control_int_circles_centre ,
   dep_potential_know_1_control_int_circles_right ,
   dep_potential_know_2_control_int_circles_left ,
+  dep_potential_know_2_control_int_circles_centre ,
   dep_potential_know_2_control_int_circles_right ,
   dep_potential_know_3_control_int_circles_left ,
+  dep_potential_know_3_control_int_circles_centre ,
   dep_potential_know_3_control_int_circles_right 
 )
 
 #Latex
 texreg::texreg(lapply(models_comp_int, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("CC1, Left", "CC1, Right", "CC2, Left", "CC2, Right", "CC3, Left", "CC3, Right"),
+                custom.model.names = c("CC1, Left", "CC1, Centre", "CC1, Right", "CC2, Left", "CC2, Centre", "CC2, Right", "CC3, Left", "CC3, Centre", "CC3, Right"),
                 fontsize = "small", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -478,7 +504,7 @@ texreg::texreg(lapply(models_comp_int, function(model) texreg::extract(model, in
 #Html
 texreg::htmlreg(lapply(models_comp_int, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("CC1, Left", "CC1, Right", "CC2, Left", "CC2, Right", "CC3, Left", "CC3, Right"),
+                custom.model.names = c("CC1, Left", "CC1, Centre", "CC1, Right", "CC2, Left", "CC2, Centre", "CC2, Right", "CC3, Left", "CC3, Centre", "CC3, Right"),
                 fontsize = "tiny", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -512,9 +538,11 @@ texreg::htmlreg(lapply(models_comp_int, function(model) texreg::extract(model, i
 ### No Interactions ######################################
 
 comp_personal_advantage_control_left <- model_control("personal_advantage", "NIMBY", controls, data_left)
+comp_personal_advantage_control_centre <- model_control("personal_advantage", "NIMBY", controls, data_centre)
 comp_personal_advantage_control_right <- model_control("personal_advantage", "NIMBY", controls, data_right)
 
 comp_ch_advantage_control_left <- model_control("ch_advantage", "NIMBY", controls, data_left)
+comp_ch_advantage_control_centre <- model_control("ch_advantage", "NIMBY", controls, data_centre)
 comp_ch_advantage_control_right <- model_control("ch_advantage", "NIMBY", controls, data_right)
 
 
@@ -522,14 +550,16 @@ comp_ch_advantage_control_right <- model_control("ch_advantage", "NIMBY", contro
 
 models_manip <- list(
   comp_personal_advantage_control_left,
+  comp_personal_advantage_control_centre,
   comp_personal_advantage_control_right,
   comp_ch_advantage_control_left,
+  comp_ch_advantage_control_centre,
   comp_ch_advantage_control_right
 )
 #Latex
 texreg::texreg(lapply(models_manip, function(model) texreg::extract(model, include.ci = FALSE)),
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("DV1, Left", "DV1, Right", "DV2, Left", "DV2, Right"),
+                custom.model.names = c("DV1, Left", "DV1, Centre", "DV1, Right", "DV2, Left", "DV2, Centre", "DV2, Right"),
                 fontsize = "small", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -558,7 +588,7 @@ texreg::texreg(lapply(models_manip, function(model) texreg::extract(model, inclu
 # Html
 texreg::htmlreg(lapply(models_manip, function(model) texreg::extract(model, include.ci = FALSE)),
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("DV1, Left", "DV1, Right", "DV2, Left", "DV2, Right"),
+                custom.model.names = c("DV1, Left", "DV1, Centre", "DV1, Right", "DV2, Left", "DV2, Centre", "DV2, Right"),
                 fontsize = "tiny", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -586,24 +616,28 @@ texreg::htmlreg(lapply(models_manip, function(model) texreg::extract(model, incl
 ### Interaction with Circles #########################
 
 dep_personal_advantage_control_int_circles_left <- model_control("personal_advantage", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_left)
+dep_personal_advantage_control_int_circles_centre <- model_control("personal_advantage", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_centre)
 dep_personal_advantage_control_int_circles_right <- model_control("personal_advantage", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_right)
 
 dep_ch_advantage_control_int_circles_left <- model_control("ch_advantage", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_left)
+dep_ch_advantage_control_int_circles_centre <- model_control("ch_advantage", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_centre)
 dep_ch_advantage_control_int_circles_right <- model_control("ch_advantage", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_right)
 
 #### SI Table 15 ##################
 
 models_manip_int <- list(
   dep_personal_advantage_control_int_circles_left,
+  dep_personal_advantage_control_int_circles_centre,
   dep_personal_advantage_control_int_circles_right,
   dep_ch_advantage_control_int_circles_left,
+  dep_ch_advantage_control_int_circles_centre,
   dep_ch_advantage_control_int_circles_right
 )
 
 #Latex
 texreg::texreg(lapply(models_manip_int, function(model) texreg::extract(model, include.ci = FALSE)),
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("DV1, Left", "DV1, Right", "DV2, Left", "DV2, Right"),
+               custom.model.names = c("DV1, Left", "DV1, Centre", "DV1, Right", "DV2, Left", "DV2, Centre", "DV2, Right"),
                 fontsize = "small", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -637,7 +671,7 @@ texreg::texreg(lapply(models_manip_int, function(model) texreg::extract(model, i
 #Html
 texreg::htmlreg(lapply(models_manip_int, function(model) texreg::extract(model, include.ci = FALSE)),
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("DV1, Left", "DV1, Right", "DV2, Left", "DV2, Right"),
+                custom.model.names = c("DV1, Left", "DV1, Centre", "DV1, Right", "DV2, Left", "DV2, Centre", "DV2, Right"),
                 fontsize = "tiny", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -673,36 +707,46 @@ texreg::htmlreg(lapply(models_manip_int, function(model) texreg::extract(model, 
 ### No Interactions #############################################
 # attitude_expansion
 comp_attitude_expansion_control_left <- model_control("attitude_expansion", "NIMBY", controls, data_left)
+comp_attitude_expansion_control_centre <- model_control("attitude_expansion", "NIMBY", controls, data_centre)
 comp_attitude_expansion_control_right <- model_control("attitude_expansion", "NIMBY", controls, data_right)
 
 # attitude_expansion_small
 comp_attitude_expansion_small_control_left <- model_control("attitude_expansion_small", "NIMBY", controls, data_left)
+comp_attitude_expansion_small_control_centre <- model_control("attitude_expansion_small", "NIMBY", controls, data_centre)
 comp_attitude_expansion_small_control_right <- model_control("attitude_expansion_small", "NIMBY", controls, data_right)
 
 # attitude_expansion_medium
 comp_attitude_expansion_medium_control_left <- model_control("attitude_expansion_medium", "NIMBY", controls, data_left)
+comp_attitude_expansion_medium_control_centre <- model_control("attitude_expansion_medium", "NIMBY", controls, data_centre)
 comp_attitude_expansion_medium_control_right <- model_control("attitude_expansion_medium", "NIMBY", controls, data_right)
 
 # attitude_expansion_large
 comp_attitude_expansion_large_control_left <- model_control("attitude_expansion_large", "NIMBY", controls, data_left)
+comp_attitude_expansion_large_control_centre <- model_control("attitude_expansion_large", "NIMBY", controls, data_centre)
 comp_attitude_expansion_large_control_right <- model_control("attitude_expansion_large", "NIMBY", controls, data_right)
 
 # attitude_expansion_nearby
 comp_attitude_expansion_nearby_control_left <- model_control("attitude_expansion_nearby", "NIMBY", controls, data_left)
+comp_attitude_expansion_nearby_control_centre <- model_control("attitude_expansion_nearby", "NIMBY", controls, data_centre)
 comp_attitude_expansion_nearby_control_right <- model_control("attitude_expansion_nearby", "NIMBY", controls, data_right)
 
 
 #### SI Table 10 #################################################
 models_expansion <- list(
   comp_attitude_expansion_small_control_left,
+  comp_attitude_expansion_small_control_centre,
   comp_attitude_expansion_small_control_right,
   comp_attitude_expansion_medium_control_left,
+  comp_attitude_expansion_medium_control_centre,
   comp_attitude_expansion_medium_control_right,
   comp_attitude_expansion_large_control_left,
+  comp_attitude_expansion_large_control_centre,
   comp_attitude_expansion_large_control_right,
   comp_attitude_expansion_control_left,
+  comp_attitude_expansion_control_centre,
   comp_attitude_expansion_control_right,
   comp_attitude_expansion_nearby_control_left,
+  comp_attitude_expansion_nearby_control_centre,
   comp_attitude_expansion_nearby_control_right
   
 )
@@ -710,7 +754,7 @@ models_expansion <- list(
 #LaTeX
 texreg::texreg(lapply(models_expansion, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("DV3, Left", "DV3, Right", "DV4, Left", "DV4, Right", "DV5, Left", "DV5, Right", "DV6, Left", "DV6, Right", "DV7, Left", "DV7, Right"),
+                custom.model.names = c("DV3, Left", "DV3, Centre", "DV3, Right", "DV4, Left", "DV4, Centre", "DV4, Right", "DV5, Left", "DV5, Centre", "DV5, Right", "DV6, Left",  "DV6, Centre", "DV6, Right", "DV7, Left", "DV7, Centre", "DV7, Right"),
                 fontsize = "small", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -739,7 +783,7 @@ texreg::texreg(lapply(models_expansion, function(model) texreg::extract(model, i
 #html
 texreg::htmlreg(lapply(models_expansion, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("DV3, Left", "DV3, Right", "DV4, Left", "DV4, Right", "DV5, Left", "DV5, Right", "DV6, Left", "DV6, Right", "DV7, Left", "DV7, Right"),
+                custom.model.names = c("DV3, Left", "DV3, Centre", "DV3, Right", "DV4, Left", "DV4, Centre", "DV4, Right", "DV5, Left", "DV5, Centre", "DV5, Right", "DV6, Left",  "DV6, Centre", "DV6, Right", "DV7, Left", "DV7, Centre", "DV7, Right"),
                 fontsize = "tiny", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -767,32 +811,42 @@ texreg::htmlreg(lapply(models_expansion, function(model) texreg::extract(model, 
 
 ### Interaction with Circles ####################################################
 dep_attitude_expansion_control_int_circles_left <- model_control("attitude_expansion", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_left)
+dep_attitude_expansion_control_int_circles_centre <- model_control("attitude_expansion", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_centre)
 dep_attitude_expansion_control_int_circles_right <- model_control("attitude_expansion", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_right)
 
 dep_attitude_expansion_small_control_int_circles_left <- model_control("attitude_expansion_small", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_left)
+dep_attitude_expansion_small_control_int_circles_centre <- model_control("attitude_expansion_small", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_centre)
 dep_attitude_expansion_small_control_int_circles_right <- model_control("attitude_expansion_small", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_right)
 
 dep_attitude_expansion_medium_control_int_circles_left <- model_control("attitude_expansion_medium", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_left)
+dep_attitude_expansion_medium_control_int_circles_centre <- model_control("attitude_expansion_medium", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_centre)
 dep_attitude_expansion_medium_control_int_circles_right <- model_control("attitude_expansion_medium", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_right)
 
 dep_attitude_expansion_large_control_int_circles_left <- model_control("attitude_expansion_large", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_left)
+dep_attitude_expansion_large_control_int_circles_centre <- model_control("attitude_expansion_large", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_centre)
 dep_attitude_expansion_large_control_int_circles_right <- model_control("attitude_expansion_large", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_right)
 
 dep_attitude_expansion_nearby_control_int_circles_left <- model_control("attitude_expansion_nearby", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_left)
+dep_attitude_expansion_nearby_control_int_circles_centre <- model_control("attitude_expansion_nearby", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_centre)
 dep_attitude_expansion_nearby_control_int_circles_right <- model_control("attitude_expansion_nearby", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_right)
 
 #### SI Table 16 ##########################################
 
 models_expansion_int <- list(
   dep_attitude_expansion_small_control_int_circles_left,
+  dep_attitude_expansion_small_control_int_circles_centre,
   dep_attitude_expansion_small_control_int_circles_right,
   dep_attitude_expansion_medium_control_int_circles_left,
+  dep_attitude_expansion_medium_control_int_circles_centre,
   dep_attitude_expansion_medium_control_int_circles_right,
   dep_attitude_expansion_large_control_int_circles_left,
+  dep_attitude_expansion_large_control_int_circles_centre,
   dep_attitude_expansion_large_control_int_circles_right,
   dep_attitude_expansion_control_int_circles_left,
+  dep_attitude_expansion_control_int_circles_centre,
   dep_attitude_expansion_control_int_circles_right,
   dep_attitude_expansion_nearby_control_int_circles_left,
+  dep_attitude_expansion_nearby_control_int_circles_centre,
   dep_attitude_expansion_nearby_control_int_circles_right
 )
 
@@ -800,7 +854,7 @@ models_expansion_int <- list(
 
 texreg::texreg(lapply(models_expansion_int, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("DV3, Left", "DV3, Right", "DV4, Left", "DV4, Right", "DV5, Left", "DV5, Right", "DV6, Left", "DV6, Right", "DV7, Left", "DV7, Right"),
+                custom.model.names = c("DV3, Left", "DV3, Centre", "DV3, Right", "DV4, Left", "DV4, Centre", "DV4, Right", "DV5, Left", "DV5, Centre", "DV5, Right", "DV6, Left", "DV6, Centre", "DV6, Right", "DV7, Left", "DV7, Centre", "DV7, Right"),
                 fontsize = "small", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -833,7 +887,7 @@ texreg::texreg(lapply(models_expansion_int, function(model) texreg::extract(mode
 #html
 texreg::htmlreg(lapply(models_expansion_int, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("DV3, Left", "DV3, Right", "DV4, Left", "DV4, Right", "DV5, Left", "DV5, Right", "DV6, Left", "DV6, Right", "DV7, Left", "DV7, Right"),
+                custom.model.names = c("DV3, Left", "DV3, Centre", "DV3, Right", "DV4, Left", "DV4, Centre", "DV4, Right", "DV5, Left", "DV5, Centre", "DV5, Right", "DV6, Left", "DV6, Centre", "DV6, Right", "DV7, Left", "DV7, Centre", "DV7, Right"),
                 fontsize = "tiny", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -870,39 +924,49 @@ texreg::htmlreg(lapply(models_expansion_int, function(model) texreg::extract(mod
 
 ### No Interactions ###################################
 dep_support_policies_control_left <- model_control("support_policies", "NIMBY", controls, data_left)
+dep_support_policies_control_centre <- model_control("support_policies", "NIMBY", controls, data_centre)
 dep_support_policies_control_right <- model_control("support_policies", "NIMBY", controls, data_right)
 
 # support_policy individually
 dep_support_policy_1_control_left <- model_control("support_policy_1", "NIMBY", controls, data_left)
+dep_support_policy_1_control_centre <- model_control("support_policy_1", "NIMBY", controls, data_centre)
 dep_support_policy_1_control_right <- model_control("support_policy_1", "NIMBY", controls, data_right)
 
 dep_support_policy_2_control_left <- model_control("support_policy_2", "NIMBY", controls, data_left)
+dep_support_policy_2_control_centre <- model_control("support_policy_2", "NIMBY", controls, data_centre)
 dep_support_policy_2_control_right <- model_control("support_policy_2", "NIMBY", controls, data_right)
 
 dep_support_policy_4_control_left <- model_control("support_policy_4", "NIMBY", controls, data_left)
+dep_support_policy_4_control_centre <- model_control("support_policy_4", "NIMBY", controls, data_centre)
 dep_support_policy_4_control_right <- model_control("support_policy_4", "NIMBY", controls, data_right)
 
 dep_support_policy_6_control_left <- model_control("support_policy_6", "NIMBY", controls, data_left)
+dep_support_policy_6_control_centre <- model_control("support_policy_6", "NIMBY", controls, data_centre)
 dep_support_policy_6_control_right <- model_control("support_policy_6", "NIMBY", controls, data_right)
 
 #### SI Table 13 #####################################
 
 models_policies <- list(
   dep_support_policies_control_left,
+  dep_support_policies_control_centre,
   dep_support_policies_control_right,
   dep_support_policy_1_control_left,
+  dep_support_policy_1_control_centre,
   dep_support_policy_1_control_right,
   dep_support_policy_4_control_left,
+  dep_support_policy_4_control_centre,
   dep_support_policy_4_control_right,
   dep_support_policy_6_control_left,
+  dep_support_policy_6_control_centre,
   dep_support_policy_6_control_right,
   dep_support_policy_2_control_left,
+  dep_support_policy_2_control_centre,
   dep_support_policy_2_control_right
 )
 #LaTeX
 texreg::texreg(lapply(models_policies, function(model) texreg::extract(model, include.ci = FALSE)), 
                digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-               custom.model.names = c("DV8, Left", "DV8, Right", "DV9, Left", "DV9, Right", "DV10, Left", "DV10, Right", "DV11, Left", "DV11, Right", "DV12, Left", "DV12, Right"),
+               custom.model.names = c("DV8, Left", "DV8, Centre", "DV8, Right", "DV9, Left", "DV9, Centre", "DV9, Right", "DV10, Left", "DV10, Centre", "DV10, Right", "DV11, Left", "DV11, Centre", "DV11, Right", "DV12, Left", "DV12, Centre", "DV12, Right"),
                fontsize = "small", longtable = T, no.margin = T,
                custom.coef.names = c("Intercept",
                                      "NIMBY",
@@ -931,7 +995,7 @@ texreg::texreg(lapply(models_policies, function(model) texreg::extract(model, in
 #html
 texreg::htmlreg(lapply(models_policies, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("DV8, Left", "DV8, Right", "DV9, Left", "DV9, Right", "DV10, Left", "DV10, Right", "DV11, Left", "DV11, Right", "DV12, Left", "DV12, Right"),
+                custom.model.names = c("DV8, Left", "DV8, Centre", "DV8, Right", "DV9, Left", "DV9, Centre", "DV9, Right", "DV10, Left", "DV10, Centre", "DV10, Right", "DV11, Left", "DV11, Centre", "DV11, Right", "DV12, Left", "DV12, Centre", "DV12, Right"),
                 fontsize = "tiny", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -959,18 +1023,23 @@ texreg::htmlreg(lapply(models_policies, function(model) texreg::extract(model, i
 
 ### Interaction with Circles ###################################################
 dep_support_policies_control_int_circles_left <- model_control("support_policies", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_left)
+dep_support_policies_control_int_circles_centre <- model_control("support_policies", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_centre)
 dep_support_policies_control_int_circles_right <- model_control("support_policies", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_right)
 
 dep_support_policy_1_control_int_circles_left <- model_control("support_policy_1", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_left)
+dep_support_policy_1_control_int_circles_centre <- model_control("support_policies", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_centre)
 dep_support_policy_1_control_int_circles_right <- model_control("support_policy_1", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_right)
 
 dep_support_policy_2_control_int_circles_left <- model_control("support_policy_2", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_left)
+dep_support_policy_2_control_int_circles_centre <- model_control("support_policy_2", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_centre)
 dep_support_policy_2_control_int_circles_right <- model_control("support_policy_2", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_right)
 
 dep_support_policy_4_control_int_circles_left <- model_control("support_policy_4", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_left)
+dep_support_policy_4_control_int_circles_centre <- model_control("support_policy_4", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_centre)
 dep_support_policy_4_control_int_circles_right <- model_control("support_policy_4", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_right)
 
 dep_support_policy_6_control_int_circles_left <- model_control("support_policy_6", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_left)
+dep_support_policy_6_control_int_circles_centre <- model_control("support_policy_6", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_centre)
 dep_support_policy_6_control_int_circles_right <- model_control("support_policy_6", "NIMBY * circle1 + NIMBY * circle2 + NIMBY * circle3", controls, data_right)
 
 
@@ -978,21 +1047,26 @@ dep_support_policy_6_control_int_circles_right <- model_control("support_policy_
 
 models_policies_int <- list(
   dep_support_policies_control_int_circles_left,
+  dep_support_policies_control_int_circles_centre,
   dep_support_policies_control_int_circles_right,
   dep_support_policy_1_control_int_circles_left,
+  dep_support_policy_1_control_int_circles_centre,
   dep_support_policy_1_control_int_circles_right,
   dep_support_policy_4_control_int_circles_left,
+  dep_support_policy_4_control_int_circles_centre,
   dep_support_policy_4_control_int_circles_right,
   dep_support_policy_6_control_int_circles_left,
+  dep_support_policy_6_control_int_circles_centre,
   dep_support_policy_6_control_int_circles_right,
   dep_support_policy_2_control_int_circles_left,
+  dep_support_policy_2_control_int_circles_centre,
   dep_support_policy_2_control_int_circles_right
 )
 
 #LaTeX
 texreg::texreg(lapply(models_policies_int, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("DV8, Left", "DV8, Right", "DV9, Left", "DV9, Right", "DV10, Left", "DV10, Right", "DV11, Left", "DV11, Right", "DV12, Left", "DV12, Right"),
+                custom.model.names = c("DV8, Left", "DV8, Centre", "DV8, Right", "DV9, Left", "DV9, Centre", "DV9, Right", "DV10, Left", "DV10, Centre", "DV10, Right", "DV11, Left", "DV11, Centre", "DV11, Right", "DV12, Left", "DV12, Centre", "DV12, Right"),
                 fontsize = "small", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -1025,7 +1099,7 @@ texreg::texreg(lapply(models_policies_int, function(model) texreg::extract(model
 #html
 texreg::htmlreg(lapply(models_policies_int, function(model) texreg::extract(model, include.ci = FALSE)), 
                 digits = 3, stars = c(0.001, 0.01, 0.05, 0.1),
-                custom.model.names = c("DV8, Left", "DV8, Right", "DV9, Left", "DV9, Right", "DV10, Left", "DV10, Right", "DV11, Left", "DV11, Right", "DV12, Left", "DV12, Right"),
+                custom.model.names = c("DV8, Left", "DV8, Centre", "DV8, Right", "DV9, Left", "DV9, Centre", "DV9, Right", "DV10, Left", "DV10, Centre", "DV10, Right", "DV11, Left", "DV11, Centre", "DV11, Right", "DV12, Left", "DV12, Centre", "DV12, Right"),
                 fontsize = "tiny", longtable = T, no.margin = T,
                 custom.coef.names = c("Intercept",
                                       "NIMBY",
@@ -1061,14 +1135,16 @@ texreg::htmlreg(lapply(models_policies_int, function(model) texreg::extract(mode
 create_error_plot <- function(variable, y_label, y_min = NULL, y_max = NULL, show_legend = FALSE, show_y_label = TRUE) {
   # Keep all data without filtering circle1 == 0
   data_left_plot <- data_left
+  data_centre_plot <- data_centre
   data_right_plot <- data_right
   
   # Add column to distinguish the groups
   data_left_plot$Side <- "Left"
+  data_centre_plot$Side <- "Centre"
   data_right_plot$Side <- "Right"
   
   # Combine both datasets
-  combined_data <- rbind(data_left_plot, data_right_plot)
+  combined_data <- rbind(data_left_plot, data_centre_plot, data_right_plot)
   print(nrow(combined_data))
   
   # Ensure NIMBY is a factor
@@ -1093,7 +1169,7 @@ create_error_plot <- function(variable, y_label, y_min = NULL, y_max = NULL, sho
       axis.title.y = if (show_y_label) element_text() else element_blank()
     ) +
     scale_shape_manual(values = c(21, 21)) +
-    scale_color_manual(values = c("Left" = "#4059AD", "Right" = "#CCA43B")) +
+    scale_color_manual(values = c("Left" = "#4059AD", "Centre" = "grey", "Right" = "#CCA43B")) +
     scale_x_discrete(labels = c("0" = "Control", "1" = "NIMBY"))
   
   # Apply custom y-scale if both limits are given
@@ -1110,11 +1186,12 @@ create_error_plot <- function(variable, y_label, y_min = NULL, y_max = NULL, sho
 create_emm_plot <- function(data, title, y_label = NULL, y_limits, y_breaks, show_legend = FALSE) {
   p <- data %>%
     mutate(NIMBY = factor(NIMBY, levels = c(0,1), labels = c("Control", "Treatment")),
-           left_right = factor(left_right, levels = c("Left", "Right"))) %>%
+           left_right = factor(left_right, levels = c("Left", "Centre", "Right"))) %>%
     ggplot(aes(x = NIMBY, y = emmean, group = left_right, col = left_right)) +
     geom_point(size = 3, position = position_dodge(0.3)) +
     geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.0, linewidth = 0.8, position = position_dodge(0.3)) +
-    scale_y_continuous(limits = y_limits, breaks = y_breaks) +
+    scale_y_continuous(limits = y_limits, 
+                       breaks = y_breaks) +
     scale_color_manual(name = "Group", values = vals_legend) +
     scale_fill_manual(name = "Group", values = vals_legend) +
     labs(title = title, x = NULL, y = y_label) +
@@ -1172,19 +1249,19 @@ theme_plot <- theme_light() +
         axis.text.x = element_text(angle = 0, hjust = 0.5),
         axis.title.x = element_text(margin = margin(t=6)))
 
-vals_legend <- c("#4059AD", "#CCA43B")
+vals_legend <- c("#4059AD", "grey", "#CCA43B")
 
 ## Manipulation Check #####################################################
 ### Plot Fig. 3 in Main Manuscript ######################################################
 # Fig. 3a displays respondents’ perceived personal advantage of building Agri-PV installations in 
 # Switzerland, Fig. 3b shows respondents’ perceived advantage of Agri-PV installations for Switzerland as a whole. 
 
-mean_1 <- create_error_plot("personal_advantage", "Ave. Rating", 4.6, 5.5, FALSE, TRUE) +
+mean_1 <- create_error_plot("personal_advantage", "Ave. Rating", 4.5, 5.7, FALSE, TRUE) +
   ggtitle("Personal Advantage") +
   theme(
     plot.title = element_text(hjust = 0.5)
   )
-mean_2 <- create_error_plot("ch_advantage", "Ave. Rating", 4.6, 5.5, TRUE, FALSE) +
+mean_2 <- create_error_plot("ch_advantage", "Ave. Rating", 4.5, 5.7, TRUE, FALSE) +
   ggtitle("Advantage for CH") +
   theme(
     plot.title = element_text(hjust = 0.5)
@@ -1202,25 +1279,29 @@ final_plot <- (mean_1 + mean_2) +
       plot.title = element_text(face = "bold", size = 16)
     )
   )
-ggsave(filename = "plots/Fig_3.png", plot = final_plot, width = 7, height =3)
+ggsave(filename = "plots/Fig_3.png", plot = final_plot, width = 10, height =4)
 
 ### EMM Plot #################################################
 # Personal advantage
 means_personal_left <- emmeans(comp_personal_advantage_control_left, "NIMBY")
+means_personal_centre <- emmeans(comp_personal_advantage_control_centre, "NIMBY")
 means_personal_right <- emmeans(comp_personal_advantage_control_right, "NIMBY")
 
 # CH Advantage
 means_ch_left <- emmeans(comp_ch_advantage_control_left, "NIMBY")
+means_ch_centre <- emmeans(comp_ch_advantage_control_centre, "NIMBY")
 means_ch_right <- emmeans(comp_ch_advantage_control_right, "NIMBY")
 
 
 means_personal <- bind_rows(
   as.data.frame(means_personal_left) %>% mutate(left_right = "Left"),
+  as.data.frame(means_personal_centre) %>% mutate(left_right = "Centre"),
   as.data.frame(means_personal_right) %>% mutate(left_right = "Right")
 )
 
 means_ch <- bind_rows(
   as.data.frame(means_ch_left) %>% mutate(left_right = "Left"),
+  as.data.frame(means_ch_centre) %>% mutate(left_right = "Centre"),
   as.data.frame(means_ch_right) %>% mutate(left_right = "Right")
 )
 
@@ -1228,14 +1309,14 @@ plot_personal_advantage <- create_emm_plot(
   data = means_personal,
   title = "Personal Advantage",
   y_label = "Estimated Mean",
-  y_limits = c(4, 6),
+  y_limits = c(2, 6),
   y_breaks = seq(4, 6, 0.4)
 )
 
 plot_ch_advantage <- create_emm_plot(
   data = means_ch,
   title = "Advantage for CH",
-  y_limits = c(4, 6),
+  y_limits = c(2, 6),
   y_breaks = seq(4, 6, 0.4),
   show_legend = TRUE
 )
@@ -1261,27 +1342,27 @@ ggsave(filename = "plots/Manipulation_Check_EMM.png", plot = final_plot, width =
 # general support for the expansion of Agri-PV in Switzerland (3d) and in their direct residential vicinity (3e), again 
 # measured on a 7-point Likert scale (1 = “strong opposition”, 7 = “strong support”)
 
-mean_1 <- create_error_plot("attitude_expansion", "Ave. Rating", 3.6, 5.6, FALSE, TRUE)  +
+mean_1 <- create_error_plot("attitude_expansion", "Ave. Rating", 3.4, 6, FALSE, TRUE)  +
   ggtitle("Expansion in CH") +
   theme(
     plot.title = element_text(hjust = 0.5)
   )
-mean_2 <- create_error_plot("attitude_expansion_small", "Ave. Rating", 3.6, 5.6, FALSE, TRUE) +
+mean_2 <- create_error_plot("attitude_expansion_small", "Ave. Rating", 3.4, 6, FALSE, TRUE) +
   ggtitle("Expansion <1ha") +
   theme(
     plot.title = element_text(hjust = 0.5)
   )
-mean_3 <- create_error_plot("attitude_expansion_medium", "Ave. Rating", 3.6, 5.6, FALSE, FALSE) +
+mean_3 <- create_error_plot("attitude_expansion_medium", "Ave. Rating", 3.4, 6, FALSE, FALSE) +
   ggtitle("Expansion <5ha") +
   theme(
     plot.title = element_text(hjust = 0.5)
   )
-mean_4 <- create_error_plot("attitude_expansion_large", "Ave. Rating", 3.6, 5.6, FALSE, FALSE) +
+mean_4 <- create_error_plot("attitude_expansion_large", "Ave. Rating", 3.4, 6, FALSE, FALSE) +
   ggtitle("Expansion <10ha") +
   theme(
     plot.title = element_text(hjust = 0.5)
   )
-mean_5 <- create_error_plot("attitude_expansion_nearby", "Ave. Rating", 3.6, 5.6, TRUE, FALSE) +
+mean_5 <- create_error_plot("attitude_expansion_nearby", "Ave. Rating", 3.4, 6, TRUE, FALSE) +
   ggtitle("Expansion in Neighbourhood") +
   theme(
     plot.title = element_text(hjust = 0.5)
@@ -1311,51 +1392,61 @@ final_plot <- mean_2 + mean_3 + mean_4 + mean_1 + mean_5 + guide_area() +
   )
 
 
-ggsave(filename = "plots/Fig_4.png", plot = final_plot, width = 10, height =6)
+ggsave(filename = "plots/Fig_4.png", plot = final_plot, width = 10, height =8)
 
 ### EMM Plot #######################################
 # Expansion <1ha
 means_expansion_small_left <- emmeans(comp_attitude_expansion_small_control_left, "NIMBY")
+means_expansion_small_centre <- emmeans(comp_attitude_expansion_small_control_centre, "NIMBY")
 means_expansion_small_right <- emmeans(comp_attitude_expansion_small_control_right, "NIMBY")
 
 # Expansion <5ha
 means_expansion_medium_left <- emmeans(comp_attitude_expansion_medium_control_left, "NIMBY")
+means_expansion_medium_centre <- emmeans(comp_attitude_expansion_medium_control_centre, "NIMBY")
 means_expansion_medium_right <- emmeans(comp_attitude_expansion_medium_control_right, "NIMBY")
 
 # Expansion <10ha
 means_expansion_large_left <- emmeans(comp_attitude_expansion_large_control_left, "NIMBY")
+means_expansion_large_centre <- emmeans(comp_attitude_expansion_large_control_centre, "NIMBY")
 means_expansion_large_right <- emmeans(comp_attitude_expansion_large_control_right, "NIMBY")
 
 # Expansion in CH
 means_expansion_ch_left <- emmeans(comp_attitude_expansion_control_left, "NIMBY")
+means_expansion_ch_centre <- emmeans(comp_attitude_expansion_control_centre, "NIMBY")
 means_expansion_ch_right <- emmeans(comp_attitude_expansion_control_right, "NIMBY")
 
 #Expansion in Neighbourhood
 means_expansion_nearby_left <- emmeans(comp_attitude_expansion_nearby_control_left, "NIMBY")
+means_expansion_nearby_centre <- emmeans(comp_attitude_expansion_nearby_control_centre, "NIMBY")
 means_expansion_nearby_right <- emmeans(comp_attitude_expansion_nearby_control_right, "NIMBY")
 
 means_expansion_small <- bind_rows(
   as.data.frame(means_expansion_small_left) %>% mutate(left_right = "Left"),
+  as.data.frame(means_expansion_small_centre) %>% mutate(left_right = "Centre"),
   as.data.frame(means_expansion_small_right) %>% mutate(left_right = "Right")
 )
 
 means_expansion_medium <- bind_rows(
   as.data.frame(means_expansion_medium_left) %>% mutate(left_right = "Left"),
+  as.data.frame(means_expansion_medium_centre) %>% mutate(left_right = "Centre"),
   as.data.frame(means_expansion_medium_right) %>% mutate(left_right = "Right")
 )
 
 means_expansion_large <- bind_rows(
   as.data.frame(means_expansion_large_left) %>% mutate(left_right = "Left"),
+  as.data.frame(means_expansion_large_centre) %>% mutate(left_right = "Centre"),
   as.data.frame(means_expansion_large_right) %>% mutate(left_right = "Right")
 )
 
 means_expansion_ch <- bind_rows(
   as.data.frame(means_expansion_ch_left) %>% mutate(left_right = "Left"),
+  as.data.frame(means_expansion_ch_left) %>% mutate(left_right = "Centre"),
   as.data.frame(means_expansion_ch_right) %>% mutate(left_right = "Right")
 )
 
 means_expansion_nearby <- bind_rows(
   as.data.frame(means_expansion_nearby_left) %>% mutate(left_right = "Left"),
+  as.data.frame(means_expansion_nearby_centre) %>% mutate(left_right = "Centre"),
   as.data.frame(means_expansion_nearby_right) %>% mutate(left_right = "Right")
 )
 

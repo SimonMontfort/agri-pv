@@ -19,7 +19,7 @@
 # version.string R version 4.3.2 (2023-10-31)
 # nickname       Eye Holes  
 
-setwd("D:/Studium/Master/Arbeit/Agri-PV/Auswertung/Replication Material")
+setwd("/Users/simon/Documents/repo/agri-pv")
       
 
 # Packages ####################################
@@ -45,7 +45,7 @@ library(cowplot)
 library(FindIt)
 
 # Load Data ###############################################
-vote <- read.csv("data/data_cleaned.csv", header = TRUE, sep = ",")
+vote <- read.csv("data/data_cleaned[1].csv", header = TRUE, sep = ",")
 
 any(sapply(stri_split_fixed(vote$QID1214859317_cjp1, ","), function(x){length(x)}) != 7)
 any(sapply(stri_split_fixed(vote$QID1214859317_cjp2, ","), function(x){length(x)}) != 7)  
@@ -276,8 +276,8 @@ dat2 <- dat %>% mutate(NIMBY = as.factor(NIMBY),
                        environment_score = ifelse(environment_score >3.5, 1, 0))
 
 dat2 <- dat2 %>% 
-  mutate(left_right_bins = case_when(left_right <=3 ~ "Left",
-                                     left_right >=4 & left_right <=6 ~ "Centre",
+  mutate(left_right_bins = case_when(left_right <=4 ~ "Left",
+                                     left_right >=5 & left_right <=6 ~ "Centre",
                                      left_right >=7 ~ "Right")) %>% 
   mutate(left_right_bins = factor(left_right_bins, levels = c("Left", "Centre", "Right"))) 
 
@@ -312,7 +312,7 @@ exp_dat <- dat2 %>%
                 urban_rural_true, 
                 NIMBY, circle, circle1, circle2, circle3,
                 rate_binary, id,
-                left_right_binary
+                left_right_binary, left_right_bins
                 ) 
 
 # check that the numbers are right and no NAs
@@ -360,13 +360,13 @@ exp_dat <- exp_dat %>%
     )
   )
 
-exp_dat $NIMBY_true <- factor(exp_dat $NIMBY_true, 
-                              levels = c("0", "1"),
-                              labels = c("Untreated", "Treated"))
+exp_dat$NIMBY_true <- factor(exp_dat $NIMBY_true, 
+                             levels = c("0", "1"),
+                             labels = c("Untreated", "Treated"))
 
-exp_dat $NIMBY <- factor(exp_dat $NIMBY, 
-                              levels = c("0", "1"),
-                              labels = c("Control", "Treatment"))
+exp_dat$NIMBY <- factor(exp_dat $NIMBY, 
+                        levels = c("0", "1"),
+                        labels = c("Control", "Treatment"))
 
 
 
@@ -425,7 +425,7 @@ mm_lf_binary_2 <- cj(
     like_energy_agri_pv + urban_rural_true , 
   id = ~id, 
   estimate = "mm", 
-  by = ~left_right_binary)
+  by = ~left_right_bins)
 
 
 mm_lf_binary_2 <- mm_lf_binary_2 %>% 
@@ -468,8 +468,8 @@ custom_labels <- c(
 
 
 data_table <- mm_lf_binary_t %>%
-  dplyr::select(feature, level, left_right_binary, estimate, std.error, z, p) %>%
-  arrange(feature, level, left_right_binary) %>%
+  dplyr::select(feature, level, left_right_bins, estimate, std.error, z, p) %>%
+  arrange(feature, level, left_right_bins) %>%
   dplyr::mutate(
     feature = recode(feature, !!!custom_labels),
     Significance = case_when(
@@ -509,13 +509,16 @@ save_kable(tbl, file = "tables/SI_Table_11.tex")
 left_p_1 <- left_p %>%
   mutate(left_right = "Left")
 
+centre_p_1 <- left_p %>%
+  mutate(left_right = "Centre")
+
 right_p_1 <- right_p %>%
   mutate(left_right = "Right")
 
 p_2 <- p %>%
   mutate(left_right = "Overall")
 
-overall_mm <- rbind(left_p_1, right_p_1, p_2)
+overall_mm <- rbind(left_p_1, centre_p_1, right_p_1, p_2)
 
 #change levels of first plot to save vertical space
 levels(overall_mm$level)[levels(overall_mm$level) == "Agri-PV systems on greenhouses\nand replacement of polytunnels"] <- "On greenhouse/replace polytunnels"
@@ -588,7 +591,7 @@ levels(mm_lf_binary_2$level)[levels(mm_lf_binary_2$level) == "Vertical open spac
 
 make_plot <- function(attr, show_ylabel = TRUE, show_legend = FALSE) {
   p <- ggplot(subset(mm_lf_binary_2, feature == attr), 
-              aes(x = level, y = estimate, colour = left_right_binary)) +
+              aes(x = level, y = estimate, colour = left_right_bins)) +
     geom_pointrange(aes(ymin = estimate - 1.96 * std.error, 
                         ymax = estimate + 1.96 * std.error), 
                     position = position_dodge(width = .2)) +
@@ -607,13 +610,13 @@ make_plot <- function(attr, show_ylabel = TRUE, show_legend = FALSE) {
     ) +
     ylab(if (show_ylabel) "Marginal Mean" else NULL) +
     xlab("") +
-    coord_cartesian(ylim = c(0.33, 0.65)) +
+    # coord_cartesian(ylim = c(0.33, 0.65)) +
     scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
     geom_hline(yintercept = 0.4, lty = "dashed") +
     geom_hline(yintercept = 0.5, lty = "dashed") +
     geom_hline(yintercept = 0.6, lty = "dashed") +
     scale_color_manual(name = "Political Orientation", 
-                       values = c("Left" = "#4059AD", "Right" = "#CCA43B")) +
+                       values = c("Left" = "#4059AD", "Centre" = "grey", "Right" = "#CCA43B")) +
     facet_wrap(~ feature, scales = "fixed", nrow = 1,
                labeller = labeller(feature = custom_labels))
   return(p)
@@ -686,6 +689,9 @@ ggsave("plots/Fig_5_conj_left_right.png", plot = final_plot, width = 16, height 
 left_p_2 <- left_p %>%
   mutate(left_right = "Left")
 
+centre_p_2 <- right_p %>%
+  mutate(left_right = "Centre")
+
 right_p_2 <- right_p %>%
   mutate(left_right = "Right")
 
@@ -693,7 +699,7 @@ p_2 <- p %>%
   mutate(left_right = "Overall")
 
 
-overall_mm <- rbind(left_p_2, right_p_2, p_2)
+overall_mm <- rbind(left_p_2, centre_p_2, right_p_2, p_2)
 
 #change levels of first plot to save vertical space
 levels(overall_mm$level)[levels(overall_mm$level) == "Agri-PV systems on greenhouses\nand replacement of polytunnels"] <- "On greenhouse/replace polytunnels"
@@ -727,7 +733,7 @@ make_plot <- function(attr, show_ylabel = TRUE, show_legend = FALSE) {
     ) +
     ylab(if (show_ylabel) "Marginal Mean" else NULL) +
     xlab("") +
-    coord_cartesian(ylim = c(0.30, 0.72)) +
+    # coord_cartesian(ylim = c(0.30, 0.72)) +
     scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
     geom_hline(yintercept = 0.3, lty = "dashed") +
     geom_hline(yintercept = 0.4, lty = "dashed") +
@@ -735,7 +741,7 @@ make_plot <- function(attr, show_ylabel = TRUE, show_legend = FALSE) {
     geom_hline(yintercept = 0.6, lty = "dashed") +
     geom_hline(yintercept = 0.7, lty = "dashed") +
     scale_color_manual(name = "Political Orientation:", 
-                       values = c("Left" = "#4059AD", "Right" = "#CCA43B", "Overall" = "grey")) +
+                       values = c("Left" = "#4059AD", "Centre" = "grey", "Right" = "#CCA43B", "Overall" = "black")) +
     scale_shape_discrete(name="Group:") + 
     facet_wrap(~ feature, scales = "fixed", nrow = 1,
                labeller = labeller(feature = custom_labels))
@@ -801,6 +807,206 @@ final_plot <- ggdraw(title_plot) +
   theme(plot.background = element_rect(fill = "white", color = NA))
 
 ggsave("plots/SI_Fig_5.png", plot = final_plot, width = 16, height = 12)
+
+
+###############################################################################
+# FOR PLOT WITHOUT NIMBY — URBAN / RURAL INTERACTION
+###############################################################################
+
+mm_ur_binary_2 <- cj(
+  exp_dat,
+  rate_binary ~ attrib1_lab + attrib2_lab + attrib3_lab + attrib4_lab +
+    attrib5_lab + attrib6_lab + attrib7_lab +
+    age_group + gender_f + environment_score + feelings_agri_pv +
+    familiar_agri_pv + like_energy_agri_pv,
+  id = ~id,
+  estimate = "mm",
+  by = ~urban_rural_true
+)
+
+mm_ur_binary_2 <- mm_ur_binary_2 %>%
+  filter(feature %in% c(
+    "attrib1_lab", "attrib2_lab", "attrib3_lab",
+    "attrib4_lab", "attrib5_lab", "attrib6_lab", "attrib7_lab"
+  ))
+
+custom_labels <- c(
+  attrib1_lab = "Agri-PV Type",
+  attrib2_lab = "Approximate Size of Agri-PV",
+  attrib3_lab = "Distance to Residency",
+  attrib4_lab = "Ownership",
+  attrib5_lab = "Impact on Food Production",
+  attrib6_lab = "Impact on Local Energy Production",
+  attrib7_lab = "Impact on Farmers Income"
+)
+
+
+###############################################################################
+# EXPORT TABLE — equivalent to SI-TABLE 11 but for URBAN/RURAL
+###############################################################################
+
+mm_ur_binary_t <- mm_ur_binary_2
+
+levels(mm_ur_binary_t$level)[levels(mm_ur_binary_t$level) ==
+                               "Agri-PV systems on greenhouses\nand replacement of polytunnels"] <-
+  "On greenhouse/replace polytunnels"
+levels(mm_ur_binary_t$level)[levels(mm_ur_binary_t$level) ==
+                               "Horizontal open space Agri-PV\nsystems on pasture or arable land"] <-
+  "Horizontal on pasture/arable land"
+levels(mm_ur_binary_t$level)[levels(mm_ur_binary_t$level) ==
+                               "Vertical open space Agri-PV\nsystems on pasture or arable land"] <-
+  "Vertical on pasture/arable land"
+
+levels(mm_ur_binary_t$level) <- gsub("%", "\\\\%", levels(mm_ur_binary_t$level))
+
+data_table <- mm_ur_binary_t %>%
+  dplyr::select(feature, level, urban_rural_true, estimate, std.error, z, p) %>%
+  arrange(feature, level, urban_rural_true) %>%
+  dplyr::mutate(
+    feature = recode(feature, !!!custom_labels),
+    Significance = case_when(
+      p < 0.001 ~ "***",
+      p < 0.01 ~ "**",
+      p < 0.05 ~ "*",
+      p < 0.1 ~ ".",
+      TRUE ~ ""
+    ),
+    p = ifelse(p < 0.001, "$<$0.001", round(p, 3))
+  )
+
+tbl <- data_table %>%
+  kbl(
+    format = "latex",
+    col.names = c(
+      "Feature", "Level", "Urban–Rural Group",
+      "Marginal Mean", "SE", "Z-Value", "p-Value", "Significance"
+    ),
+    digits = 3,
+    booktabs = TRUE,
+    longtable = TRUE,
+    escape = FALSE
+  ) %>%
+  column_spec(1, width = "4cm", latex_valign = "p") %>%
+  column_spec(2, width = "4cm", latex_valign = "p") %>%
+  column_spec(3, width = "2.5cm", latex_valign = "p") %>%
+  collapse_rows(columns = c(1, 2))
+
+save_kable(tbl, file = "tables/SI_Table_11_URBAN_RURAL.tex")
+
+
+###############################################################################
+# PLOT FIGURE — FULL REPLACEMENT OF FIG. 5 (Urban vs Rural)
+###############################################################################
+
+levels(mm_ur_binary_2$level)[levels(mm_ur_binary_2$level) ==
+                               "Agri-PV systems on greenhouse\nand replacement of polytunnels"] <-
+  "On greenhouse/replace polytunnels"
+levels(mm_ur_binary_2$level)[levels(mm_ur_binary_2$level) ==
+                               "Horizontal open space Agri-PV\nsystems on pasture or arable land"] <-
+  "Horizontal on pasture/arable land"
+levels(mm_ur_binary_2$level)[levels(mm_ur_binary_2$level) ==
+                               "Vertical open space Agri-PV\nsystems on pasture or arable land"] <-
+  "Vertical on pasture/arable land"
+
+make_plot_ur <- function(attr, show_ylabel = TRUE, show_legend = FALSE) {
+  ggplot(subset(mm_ur_binary_2, feature == attr),
+         aes(
+           x = level, y = estimate,
+           colour = urban_rural_true
+         )
+  ) +
+    geom_pointrange(aes(
+      ymin = estimate - 1.96 * std.error,
+      ymax = estimate + 1.96 * std.error
+    ),
+    position = position_dodge(width = .2)
+    ) +
+    scale_x_discrete(labels = scales::label_wrap(18)) +
+    theme_bw() +
+    theme(
+      legend.position = if (show_legend) "bottom" else "none",
+      axis.text.x = element_text(size = 14, angle = 20, colour = "black",
+                                 margin = margin(t = 17, b = -20)
+      ),
+      axis.text.y = element_text(size = if (show_ylabel) 12 else 0),
+      axis.title.y = element_text(size = if (show_ylabel) 16 else 0),
+      legend.text = element_text(size = 16),
+      legend.title = element_text(size = 16),
+      strip.text.x = element_text(size = 16),
+      strip.background = element_blank(),
+      plot.margin = margin(b = -40, t = 0, l = 5, r = 5)
+    ) +
+    ylab(if (show_ylabel) "Marginal Mean" else NULL) +
+    xlab("") +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    geom_hline(yintercept = 0.4, lty = "dashed") +
+    geom_hline(yintercept = 0.5, lty = "dashed") +
+    geom_hline(yintercept = 0.6, lty = "dashed") +
+    scale_color_manual(
+      name = "Urban–Rural Classification",
+      labels = c(
+        "1" = "Urban",
+        "2" = "Suburban",
+        "3" = "Rural"
+      ),
+      values = c(
+        "1" = "#4059AD",
+        "2" = "grey",
+        "3" = "#CCA43B"
+      )
+    ) +
+    facet_wrap(~feature,
+               scales = "fixed", nrow = 1,
+               labeller = labeller(feature = custom_labels)
+    )
+}
+
+# Generate 7 attribute plots
+plot_attrib1 <- make_plot_ur("attrib1_lab", show_ylabel = TRUE)
+plot_attrib2 <- make_plot_ur("attrib2_lab", show_ylabel = FALSE)
+plot_attrib3 <- make_plot_ur("attrib3_lab", show_ylabel = FALSE)
+plot_attrib4 <- make_plot_ur("attrib4_lab", show_ylabel = TRUE)
+plot_attrib5 <- make_plot_ur("attrib5_lab", show_ylabel = FALSE)
+plot_attrib6 <- make_plot_ur("attrib6_lab", show_ylabel = TRUE)
+plot_attrib7 <- make_plot_ur("attrib7_lab", show_ylabel = FALSE, show_legend = TRUE)
+
+# Arrange into rows
+row1 <- ggarrange(plot_attrib1, plot_attrib2, plot_attrib3, ncol = 3, align = "h")
+row2 <- ggarrange(plot_attrib4, plot_attrib5, ncol = 2, align = "h")
+row3 <- ggarrange(plot_attrib6, plot_attrib7, ncol = 2, align = "h",
+                  common.legend = TRUE, legend = "bottom"
+)
+
+combined_plot <- plot_grid(row1, row2, row3, ncol = 1)
+
+# Title and caption
+title <- ggdraw() +
+  draw_label(
+    "Effects of Interaction with Urban–Rural Classification",
+    fontface = "bold", size = 20, x = 0.5, hjust = 0.5
+  )
+
+caption <- ggdraw() +
+  draw_label(
+    "Number of Observations: 2155, Number of Unique IDs: 17240",
+    size = 12, x = 0, hjust = 0
+  )
+
+title_plot <- plot_grid(title, combined_plot, caption,
+                        ncol = 1, rel_heights = c(0.07, 1)
+)
+
+final_plot <- ggdraw(title_plot) +
+  theme(plot.background = element_rect(fill = "white", colour = NA))
+
+ggsave("plots/Fig_URBAN_RURAL.png",
+       plot = final_plot, width = 16, height = 12
+)
+
+
+
+
+
 
 
 # Average Marginal Interaction Effect (AMIE)##############################################
